@@ -2,7 +2,7 @@
 
 An interactive, illustrative biomechanics visualizer for the **lindy-hop bounce** — the rhythmic, squat-like pulse swing dancers ride on every beat. It shows where the bounce sends its load across the legs (joints vs. muscles) through *every* phase of the movement, to help find a posture that protects the knees, hips, and lower back over years of dancing.
 
-**Live demo:** _(GitHub Pages link — added on publish)_
+**Live demo:** https://8countcode.github.io/lindy-bounce/
 
 ## What it does
 
