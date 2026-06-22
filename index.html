@@ -102,6 +102,12 @@
   #cmpMetric{background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:4px 6px; font-size:11.5px}
   .cmpsummary{font-size:12px; margin:8px 0 4px; line-height:1.55}
   #cmpChart{background:var(--panel2); border:1px solid var(--line); border-radius:8px; margin-top:4px; height:auto}
+  .cmpgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px}
+  .cmpcol{text-align:center}
+  .cmplab{font-size:12px; font-weight:700; margin-bottom:2px}
+  .cmpcol svg{width:100%; height:auto}
+  .cmpcol .cmpcyc{margin-top:6px; background:var(--panel2) !important}
+  .app.simple .adv{display:none}
 </style>
 </head>
 <body>
@@ -109,9 +115,11 @@
 
   <!-- ============ LEFT: CONTROLS ============ -->
   <div class="col left">
-    <h1>Bounce Load Lab <span class="pill">v3 · foot + dynamics</span></h1>
+    <h1>Bounce Load Lab <span class="pill">v4 · compare</span></h1>
     <p class="sub">Dynamic 2D leg model: where a lindy-hop bounce sends its load through <i>every</i> phase — and how the spike at the bottom shifts between muscles (good) and joints (risky).</p>
+    <button class="cbtn" id="simpleToggle" style="margin-bottom:10px">◐ Simple mode</button>
 
+    <div class="adv">
     <h2>Body</h2>
     <div class="field">
       <label>Body mass <span class="val" id="v_mass">72 kg</span></label>
@@ -121,13 +129,15 @@
       <label>Height <span class="val" id="v_height">175 cm</span></label>
       <input id="height" type="range" min="140" max="205" step="1" value="175">
     </div>
+    </div>
 
     <h2>Bounce pose</h2>
     <div class="modes" id="poseEnd" style="grid-template-columns:1fr 1fr; margin-bottom:6px">
       <div class="mode" data-end="top"><b>Top</b>start of bounce</div>
       <div class="mode active" data-end="bottom"><b>Bottom</b>deepest point</div>
     </div>
-    <div class="hint" style="margin:-2px 0 8px">Editing the <b id="editEndLabel">bottom</b> pose — the sliders below, or dragging the joints in the figure, set this end's joint angles. The bounce travels between the two ends.</div>
+    <div class="hint" style="margin:-2px 0 8px">Editing the <b id="editEndLabel">bottom</b> pose — <span class="adv">use the sliders below, or </span>drag the knee, hip &amp; head in the figure to set this end's joint angles. The bounce travels between the two ends.</div>
+    <div class="adv">
     <div class="field">
       <label>Bounce depth <span class="val" id="v_depth">25%</span></label>
       <input id="depth" type="range" min="0" max="100" step="1" value="25">
@@ -148,7 +158,9 @@
       <input id="wpos" type="range" min="0" max="100" step="1" value="55">
       <div class="hint">How far forward you ride. It rolls the heel up, shifts your centre of mass forward, and shrinks the base of support to the forefoot — and the contact point keeps moving through the bounce (heel settling at the bottom, ball at push-off).</div>
     </div>
+    </div>
 
+    <div class="adv">
     <h2>Dynamics &amp; stance</h2>
     <div class="field">
       <label>Tempo <span class="val" id="v_bpm">160 BPM</span></label>
@@ -214,6 +226,7 @@
         <li>Condition calves, ankles and the posterior chain, and warm up before fast social dancing — the bounce is single-leg, forefoot-driven and high-frequency for hours.</li>
       </ul>
     </details>
+    </div>
 
     <p class="disclaimer">Educational and illustrative only — not medical advice. Forces, moments and thresholds are order-of-magnitude estimates from a simplified 2D quasi-static model and population-average literature, not clinical measurements or injury cutoffs. Most of these loads are safely handled by healthy, conditioned joints. Treat the overload flags as caution / learning tiers, not pass/fail. See a physical therapist or sports-medicine professional for any pain or personal risk assessment.</p>
   </div>
@@ -230,16 +243,16 @@
         <span>low</span><div class="grad"></div><span>high</span>
         <span id="legendMax" style="min-width:74px;text-align:right"></span>
       </div>
-      <div class="chart">
+      <div class="chart adv">
         <div class="chartlabel"><span>Load through the bounce cycle</span><span id="chartPeak"></span></div>
         <svg id="cyc" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg" aria-label="Load vs bounce phase"></svg>
         <div class="chartx"><span>↑ top</span><span>bottom · impact</span><span>top ↑</span></div>
       </div>
-      <div class="chart">
+      <div class="chart adv">
         <div class="chartlabel"><span>Weight shift across the step pattern</span><span id="stepPeak"></span></div>
         <svg id="stepsvg" viewBox="0 0 520 80" xmlns="http://www.w3.org/2000/svg" aria-label="Weight shift across the step pattern"></svg>
       </div>
-      <div class="compare">
+      <div class="compare adv">
         <div class="cmphdr">
           <span>Compare two bounces</span>
           <span class="cmpctrls">
@@ -254,6 +267,14 @@
           </span>
         </div>
         <div id="cmpSummary" class="cmpsummary"></div>
+        <div class="cmpgrid">
+          <div class="cmpcol"><div class="cmplab" style="color:#58a6ff">A</div>
+            <svg id="cmpFigA" viewBox="0 0 420 540" xmlns="http://www.w3.org/2000/svg"></svg>
+            <svg id="cmpCycA" class="cmpcyc" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg"></svg></div>
+          <div class="cmpcol"><div class="cmplab" style="color:#e0822a">B</div>
+            <svg id="cmpFigB" viewBox="0 0 420 540" xmlns="http://www.w3.org/2000/svg"></svg>
+            <svg id="cmpCycB" class="cmpcyc" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg"></svg></div>
+        </div>
         <svg id="cmpChart" viewBox="0 0 520 210" xmlns="http://www.w3.org/2000/svg" aria-label="Peak load per joint/muscle — bounce A vs B"></svg>
       </div>
     </div>
@@ -760,6 +781,7 @@ function heat(t){
 const fig = document.getElementById('fig');
 const VB = { w:420, h:540 };
 let RENDER_VIEW = null;   // {scale, originX, groundY, liftPx, pose} — for un-projecting joint drags
+let CMP = null;           // {A, B, cycA, cycB} — saved bounces for the side-by-side comparison
 function project(p, scale, originX, groundY){
   return { X: originX + p.x*scale, Y: groundY - p.y*scale };
 }
@@ -773,15 +795,19 @@ function band(a,b,off,color,wid){
   return line({X:a.X+nx,Y:a.Y+ny},{X:b.X+nx,Y:b.Y+ny},color,wid);
 }
 
-function render(sol){
+function renderFigureInto(svgEl, sol, opts){
+  opts = opts || {};
   const p = sol.p;
-  const scale = (VB.h-110) / (state.height*1.08);
+  const H = opts.height || state.height;
+  const cfg = opts.cfg || state;
+  const isMain = !!opts.isMain;
+  const scale = (VB.h-110) / (H*1.08);
   const originX = VB.w/2 - 30;
   const groundY = VB.h-46;
   // light flight phase: lift the whole body (and foot) off the floor when airborne
-  const lift = flightDeficit(state, sol.phase) * 0.06;          // metres lifted (kept light)
+  const lift = flightDeficit(cfg, sol.phase) * 0.06;          // metres lifted (kept light)
   const liftPx = lift * scale, airborne = liftPx > 1;
-  RENDER_VIEW = { scale, originX, groundY, liftPx, pose:p };
+  if(isMain) RENDER_VIEW = { scale, originX, groundY, liftPx, pose:p };
   const P  = q => { const r = project(q, scale, originX, groundY); r.Y -= liftPx; return r; };  // body (lifts in flight)
   const P0 = q => project(q, scale, originX, groundY);                                          // ground contact (stays)
   const ankle=P(p.ankle), knee=P(p.knee), hip=P(p.hip), sh=P(p.shoulder),
@@ -842,7 +868,7 @@ function render(sol){
   function joint(pt,key){
     const mm = m('joint',key);
     const r = mm.muted ? 7 : 7 + 9*Math.max(0,Math.min(1,mm.t));
-    const drag = (key==='knee'||key==='hip') ? ` class="jdrag" data-j="${key}" style="cursor:grab"` : '';
+    const drag = (isMain && (key==='knee'||key==='hip')) ? ` class="jdrag" data-j="${key}" style="cursor:grab"` : '';
     return `<circle${drag} cx="${pt.X}" cy="${pt.Y}" r="${r.toFixed(1)}" fill="${col(mm)}" stroke="#0d1117" stroke-width="2"/>`;
   }
   g += joint(ball,'mtp');
@@ -852,12 +878,13 @@ function render(sol){
   g += joint(lum,'lumbar');
 
   // head (drag to set trunk lean)
-  g += `<circle class="jdrag" data-j="trunk" style="cursor:grab" cx="${(sh.X+Math.sin(p.thetaL)*14).toFixed(1)}" cy="${(sh.Y-16).toFixed(1)}" r="13" fill="#2b323c" stroke="#39414d" stroke-width="2"/>`;
+  const headDrag = isMain ? ' class="jdrag" data-j="trunk" style="cursor:grab"' : '';
+  g += `<circle${headDrag} cx="${(sh.X+Math.sin(p.thetaL)*14).toFixed(1)}" cy="${(sh.Y-16).toFixed(1)}" r="13" fill="#2b323c" stroke="#39414d" stroke-width="2"/>`;
 
-  // labels for the highlighted structures (top 2 by value in current mode)
-  fig.innerHTML = g;
-
-  // legend max text
+  svgEl.innerHTML = g;
+}
+function render(sol){
+  renderFigureInto(fig, sol, {isMain:true});
   document.getElementById('legendMax').textContent =
     state.mode==='reaction' ? REF.reaction.toFixed(0)+'×BW' :
     state.mode==='moment'   ? Math.round(REF.moment*state.mass)+' N·m' :
@@ -905,8 +932,8 @@ function updateReadout(sol, cycle, bal){
   flags(state, cycle, bal);
 }
 
-// load-through-the-cycle chart
-function renderCycle(cycle, curP){
+// load-through-the-cycle chart (into any svg element)
+function renderCycleInto(svgEl, cycle, curP, peakEl){
   const Wc=520, Hc=140, padL=8, padR=8, padT=12, padB=18;
   const xs = p => padL + p*(Wc-padL-padR);
   const peakJoint = JOINTS.reduce((a,j)=> cycle.peak.react[j]>cycle.peak.react[a]?j:a, 'knee');
@@ -924,10 +951,13 @@ function renderCycle(cycle, curP){
   g += poly(cycle.Lf, '#8b98a6', 1.5, 'stroke-dasharray="5 3"');
   g += `<line x1="${xs(curP).toFixed(1)}" y1="${padT}" x2="${xs(curP).toFixed(1)}" y2="${Hc-padB}" stroke="#58a6ff" stroke-width="1.5"/>`;
   g += `<text x="${xs(1)-2}" y="${padT+6}" text-anchor="end" fill="#8b98a6" font-size="9">dashed = impact ×BW · solid = ${JOINT_LABEL[peakJoint]} ×BW</text>`;
-  document.getElementById('cyc').innerHTML = g;
-  document.getElementById('chartPeak').textContent =
+  svgEl.innerHTML = g;
+  if(peakEl) peakEl.textContent =
     `peak ${JOINT_LABEL[peakJoint]} ${capBW(cycle.peak.react[peakJoint])} · impact ${cycle.peak.L.toFixed(2)}×`
     + (cycle.airborneFrac>0.01 ? ` · ✈ ${Math.round(cycle.airborneFrac*100)}% airborne` : '');
+}
+function renderCycle(cycle, curP){
+  renderCycleInto(document.getElementById('cyc'), cycle, curP, document.getElementById('chartPeak'));
 }
 
 // fore-aft balance meter: CoM sway band + extrapolated-CoM extremes vs the base of support
@@ -1007,6 +1037,18 @@ function renderCompare(){
   g+=`<text x="${Wc-padR}" y="${Hc-6}" text-anchor="end" font-size="9"><tspan fill="#58a6ff">■ A</tspan>  <tspan fill="#e0822a">■ B</tspan></text>`;
   chart.innerHTML=g;
   document.querySelectorAll('#cmpSummary .optapply').forEach(el=>el.addEventListener('click',()=>loadBounce(el.dataset.load)));
+  // side-by-side animating figures + load-cycle charts
+  CMP = { A, B, cycA: A&&computeCycle(A), cycB: B&&computeCycle(B) };
+  if(!A){ document.getElementById('cmpFigA').innerHTML=''; document.getElementById('cmpCycA').innerHTML=''; }
+  if(!B){ document.getElementById('cmpFigB').innerHTML=''; document.getElementById('cmpCycB').innerHTML=''; }
+  updateCmpFrame(state.playing ? animPhase : 0.5);
+}
+function updateCmpFrame(ph){
+  if(!CMP) return;
+  if(CMP.A){ renderFigureInto(document.getElementById('cmpFigA'), solveDynamic(CMP.A, ph), {height:CMP.A.height, cfg:CMP.A});
+             renderCycleInto(document.getElementById('cmpCycA'), CMP.cycA, ph, null); }
+  if(CMP.B){ renderFigureInto(document.getElementById('cmpFigB'), solveDynamic(CMP.B, ph), {height:CMP.B.height, cfg:CMP.B});
+             renderCycleInto(document.getElementById('cmpCycB'), CMP.cycB, ph, null); }
 }
 function loadBounce(k){
   const cfg = k==='A'?state.bounceA:state.bounceB; if(!cfg) return;
@@ -1257,6 +1299,7 @@ function tick(ts){
   document.getElementById('phase').value = Math.round(animPhase*100);
   document.getElementById('v_phase').textContent = phaseLabel(animPhase);
   recompute();
+  updateCmpFrame(animPhase);     // animate the side-by-side A/B figures in sync
   if(state.playing) raf=requestAnimationFrame(tick);
 }
 
@@ -1298,6 +1341,12 @@ function applyJointDrag(joint, mx, my){
 document.getElementById('saveA').addEventListener('click',()=>{ state.bounceA=snapshotBounce(); renderCompare(); });
 document.getElementById('saveB').addEventListener('click',()=>{ state.bounceB=snapshotBounce(); renderCompare(); });
 document.getElementById('cmpMetric').addEventListener('change', renderCompare);
+
+// simple mode: hide everything tagged .adv, leaving just the Top/Bottom pose + figure + readout
+document.getElementById('simpleToggle').addEventListener('click',()=>{
+  const on=document.querySelector('.app').classList.toggle('simple');
+  document.getElementById('simpleToggle').textContent = on ? '◑ Show full controls' : '◐ Simple mode';
+});
 
 // boot
 recompute();
