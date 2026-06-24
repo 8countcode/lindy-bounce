@@ -10,14 +10,14 @@
     --txt:#e6edf3; --muted:#9aa7b4; --accent:#58a6ff; --good:#3fb950; --bad:#f85149; --warn:#d29922;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%}
+  html,body{margin:0;height:100%;max-width:100%;overflow-x:hidden}
   body{
     background:var(--bg); color:var(--txt);
     font:14px/1.45 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
   }
-  .app{display:grid; grid-template-columns:320px 1fr 320px; height:100vh; min-height:640px}
+  .app{display:grid; grid-template-columns:320px 1fr 320px; height:100vh; min-height:640px; max-width:100%}
   @media (max-width:1100px){ .app{grid-template-columns:1fr; height:auto} }
-  .col{padding:16px; overflow-y:auto}
+  .col{padding:16px; overflow-y:auto; min-width:0}
   .col.left{border-right:1px solid var(--line); background:var(--panel)}
   .col.right{border-left:1px solid var(--line); background:var(--panel)}
   .col.center{display:flex; flex-direction:column; align-items:center}
@@ -45,7 +45,7 @@
   .tag.good{background:rgba(63,185,80,.16); color:var(--good)}
   .tag.bad{background:rgba(248,81,73,.16); color:var(--bad)}
   .tag.warn{background:rgba(210,153,34,.16); color:var(--warn)}
-  .stage{width:100%; max-width:520px}
+  .stage{width:100%; max-width:520px; min-width:0}
   .stagehead{display:flex; justify-content:space-between; align-items:baseline; width:100%; margin:4px 0 6px}
   svg{width:100%; height:auto; display:block; background:radial-gradient(120% 80% at 50% 18%, #131a23 0%, #0d1117 70%); border:1px solid var(--line); border-radius:12px}
   #fig{touch-action:none}
@@ -103,7 +103,7 @@
   .cmpsummary{font-size:12px; margin:8px 0 4px; line-height:1.55}
   #cmpChart{background:var(--panel2); border:1px solid var(--line); border-radius:8px; margin-top:4px; height:auto}
   .cmpgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px}
-  .cmpcol{text-align:center}
+  .cmpcol{text-align:center; min-width:0}
   .cmplab{font-size:12px; font-weight:700; margin-bottom:2px}
   .cmpcol svg{width:100%; height:auto}
   .cmpcol .cmpcyc{margin-top:6px; background:var(--panel2) !important}
@@ -139,6 +139,8 @@
   .app.easy.view-ref .col.right{display:none}
   .app.easy.view-ref{grid-template-columns:300px 1fr}
   .easycustom .cbtn{margin:0 6px 6px 0}
+  /* below desktop: never keep the fixed 300px sidebar (it squeezes the animation off-screen) */
+  @media (max-width:1100px){ .app.easy.view-ref{grid-template-columns:1fr} }
   /* mobile-first: figure/animation prominent, controls below */
   @media (max-width:760px){
     .app, .app.easy.view-ref{grid-template-columns:1fr}
