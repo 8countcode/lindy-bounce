@@ -124,6 +124,7 @@
   .easycustom{display:none}
   .app.easy.view-custom .easycustom{display:block}
   .app.easy.view-custom .compare{display:none}
+  .app.easy.view-custom #easyPlayMain{display:none}
   .app.easy.view-one .compare, .app.easy.view-one .posesec{display:none}
   .app.easy.view-ref .figmain, .app.easy.view-ref .posesec{display:none}
   .app.easy.view-ref .col.right{display:none}
@@ -156,6 +157,7 @@
     <div class="easybar carouselhint" data-i18n="chooseExample" style="font-size:11.5px;color:var(--muted);margin:2px 0 6px">Choose an example bounce — swipe the cards, then watch it animate.</div>
     <div class="easybar carousel" id="easySel"></div>
     <button class="cbtn easybar" id="optimizeBody" data-i18n="optimizeBody" style="display:none; margin-bottom:10px; border-color:var(--accent); color:var(--accent)">⚙ Optimize examples to new body</button>
+    <button class="btn easybar" id="easyPlayMain" style="margin-bottom:12px">❚❚ Pause</button>
 
     <div class="adv">
     <h2 data-i18n="body">Body</h2>
@@ -670,6 +672,9 @@ function applyLang(){
   if(typeof renderModes==='function') renderModes();
   if(typeof renderCarousel==='function') renderCarousel();
   if(typeof refreshEasyLabel==='function') refreshEasyLabel();
+  const pls=state.playing;
+  ['easyPlay','easyPlayMain'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent = pls ? t('pause') : t('animateShort'); });
+  const pb=document.getElementById('play'); if(pb) pb.textContent = pls ? t('pause') : t('animate');
   if(typeof recompute==='function'){ recompute(); renderCompare(); }
 }
 function toggleLang(){ LANG = LANG==='en' ? 'ko' : 'en'; localStorage.setItem('blab_lang', LANG); applyLang(); }
@@ -1596,6 +1601,7 @@ function togglePlay(on){
   playBtn.classList.toggle('on', state.playing);
   playBtn.textContent = state.playing ? t('pause') : t('animate');
   const ep=document.getElementById('easyPlay'); if(ep) ep.textContent = state.playing ? t('pause') : t('animateShort');
+  const epm=document.getElementById('easyPlayMain'); if(epm){ epm.textContent = state.playing ? t('pause') : t('animateShort'); epm.classList.toggle('on', state.playing); }
   if(state.playing){ t0=null; raf=requestAnimationFrame(tick); }
   else if(raf){ cancelAnimationFrame(raf); raf=null; }
 }
@@ -1787,6 +1793,7 @@ function setEasyView(view, exId, cfg){
 }
 document.getElementById('easyOpt').addEventListener('click',()=>runOptimizer('easyOptResults'));
 document.getElementById('easyPlay').addEventListener('click',()=>togglePlay());
+document.getElementById('easyPlayMain').addEventListener('click',()=>togglePlay());
 
 // ----- Re-derive the example bounces for an adjusted body ("Optimize to new body") -----
 // searchGood: grid-search posture + path for the highest joint-protection score at this body.
