@@ -107,17 +107,30 @@
   .cmplab{font-size:12px; font-weight:700; margin-bottom:2px}
   .cmpcol svg{width:100%; height:auto}
   .cmpcol .cmpcyc{margin-top:6px; background:var(--panel2) !important}
-  .app.simple .adv{display:none}
+  /* easy-mode visibility */
+  .app:not(.easy) .easybar{display:none}
+  .app.easy .adv{display:none}
+  .easycustom{display:none}
+  .app.easy.view-custom .easycustom{display:block}
+  .app.easy.view-custom .compare{display:none}
+  .app.easy.view-ref .figmain, .app.easy.view-ref .posesec{display:none}
+  .app.easy.view-ref .col.right{display:none}
+  .app.easy.view-ref{grid-template-columns:300px 1fr}
+  .easycustom .cbtn{margin:0 6px 6px 0}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app easy view-ref">
 
   <!-- ============ LEFT: CONTROLS ============ -->
   <div class="col left">
-    <h1>Bounce Load Lab <span class="pill">v4 · compare</span></h1>
-    <p class="sub">Dynamic 2D leg model: where a lindy-hop bounce sends its load through <i>every</i> phase — and how the spike at the bottom shifts between muscles (good) and joints (risky).</p>
-    <button class="cbtn" id="simpleToggle" style="margin-bottom:10px">◐ Simple mode</button>
+    <h1>Bounce Load Lab <span class="pill">v5 · easy</span></h1>
+    <p class="sub">See where a lindy-hop bounce sends its load — and how a good hip-hinge bounce spares the knees and ankles versus a stiff, upright one.</p>
+    <button class="cbtn" id="simpleToggle" style="margin-bottom:8px">⚙ Advanced controls</button>
+    <div class="modes easybar" id="easySel" style="grid-template-columns:1fr 1fr; margin-bottom:10px">
+      <div class="mode active" data-view="ref"><b>Good vs Bad</b>watch &amp; compare</div>
+      <div class="mode" data-view="custom"><b>Custom</b>drag &amp; optimise</div>
+    </div>
 
     <div class="adv">
     <h2>Body</h2>
@@ -131,12 +144,14 @@
     </div>
     </div>
 
+    <div class="posesec">
     <h2>Bounce pose</h2>
     <div class="modes" id="poseEnd" style="grid-template-columns:1fr 1fr; margin-bottom:6px">
       <div class="mode" data-end="top"><b>Top</b>start of bounce</div>
       <div class="mode active" data-end="bottom"><b>Bottom</b>deepest point</div>
     </div>
     <div class="hint" style="margin:-2px 0 8px">Editing the <b id="editEndLabel">bottom</b> pose — <span class="adv">use the sliders below, or </span>drag the knee, hip &amp; head in the figure to set this end's joint angles. The bounce travels between the two ends.</div>
+    </div>
     <div class="adv">
     <div class="field">
       <label>Bounce depth <span class="val" id="v_depth">25%</span></label>
@@ -234,6 +249,7 @@
   <!-- ============ CENTER: FIGURE ============ -->
   <div class="col center">
     <div class="stage">
+      <div class="figmain">
       <div class="stagehead">
         <div><strong id="viewTitle">Joint reaction force</strong> <span class="pill" id="viewUnit">×body-weight</span></div>
         <div style="color:var(--muted);font-size:12px" id="poseLabel">Custom posture</div>
@@ -242,6 +258,13 @@
       <div class="legendbar">
         <span>low</span><div class="grad"></div><span>high</span>
         <span id="legendMax" style="min-width:74px;text-align:right"></span>
+      </div>
+      <div class="easycustom" id="easyCustomBar">
+        <div style="font-size:11.5px;color:var(--muted);margin:8px 0 6px">Drag the <b>knee</b>, <b>hip</b> &amp; <b>head</b> to shape the pose. Switch <b>Top</b>/<b>Bottom</b> on the left, then optimise the path between them.</div>
+        <button class="cbtn" id="easyOpt">⚙ Find optimal path</button>
+        <button class="cbtn" id="easyPlay">▶ Animate</button>
+        <div id="easyOptResults"></div>
+      </div>
       </div>
       <div class="chart adv">
         <div class="chartlabel"><span>Load through the bounce cycle</span><span id="chartPeak"></span></div>
@@ -252,7 +275,7 @@
         <div class="chartlabel"><span>Weight shift across the step pattern</span><span id="stepPeak"></span></div>
         <svg id="stepsvg" viewBox="0 0 520 80" xmlns="http://www.w3.org/2000/svg" aria-label="Weight shift across the step pattern"></svg>
       </div>
-      <div class="compare adv">
+      <div class="compare">
         <div class="cmphdr">
           <span>Compare two bounces</span>
           <span class="cmpctrls">
@@ -1268,26 +1291,28 @@ function togglePlay(on){
 playBtn.addEventListener('click', ()=>togglePlay());
 
 // path optimiser — compare the best path for each objective; click "apply" to use one
-document.getElementById('optBtn').addEventListener('click',()=>{
+function runOptimizer(targetId){
   const r=optimizePaths(state);
   const card=(name,desc,o)=>`<div class="optcard">
     <div><b>${name}</b><span class="optapply" data-c="${o.coord}" data-s="${o.soft}">apply</span></div>
     <div class="opthint">${desc} — ${o.coord<0?'hip-led':o.coord>0?'knee-led':'synchronised'}, ${Math.round(o.soft*100)}% soft</div>
     <div class="optmetrics">peak ${capBW(o.peak)} · total ${Math.round(o.cum)} · ${o.tipping?'<span style="color:var(--bad)">off-balance</span>':'<span style="color:var(--good)">balanced</span>'}</div>
   </div>`;
-  document.getElementById('optResults').innerHTML =
+  const el=document.getElementById(targetId);
+  el.innerHTML =
     card('Lowest peak load','min worst-moment',r.minPeak)
    +card('Lowest cumulative','min total load',r.minCum)
    +card('Smoothest','flattest load profile',r.smooth)
    +card('Most balanced','CoM kept safest over the base',r.balanced);
-  document.querySelectorAll('.optapply').forEach(el=>el.addEventListener('click',()=>{
-    state.pathCoord=+el.dataset.c; state.softness=+el.dataset.s;
+  el.querySelectorAll('.optapply').forEach(a=>a.addEventListener('click',()=>{
+    state.pathCoord=+a.dataset.c; state.softness=+a.dataset.s;
     document.getElementById('softness').value=Math.round(state.softness*100);
     document.getElementById('v_soft').textContent=Math.round(state.softness*100)+'%';
-    document.getElementById('poseLabel').textContent='Optimized path';
+    document.getElementById('poseLabel').textContent='Optimised path';
     recompute();
   }));
-});
+}
+document.getElementById('optBtn').addEventListener('click',()=>runOptimizer('optResults'));
 
 function tick(ts){
   if(t0===null) t0=ts;
@@ -1342,15 +1367,52 @@ document.getElementById('saveA').addEventListener('click',()=>{ state.bounceA=sn
 document.getElementById('saveB').addEventListener('click',()=>{ state.bounceB=snapshotBounce(); renderCompare(); });
 document.getElementById('cmpMetric').addEventListener('change', renderCompare);
 
-// simple mode: hide everything tagged .adv, leaving just the Top/Bottom pose + figure + readout
+// ===== Easy mode: Good-vs-Bad reference + Custom (drag & optimise) =====
+// Good and Bad share the same top & bottom CoM height (same vertical travel) and a slow
+// tempo, so the only difference is technique: hip-hinge + springy foot vs upright + flat foot.
+const EZ_TOP = { depth:0.05, kneeForward:0.12, trunkLean:0.10, wpos:0.55 };
+const EX_GOOD = { mass:72, height:1.75, depth:0.30, kneeForward:0.34, trunkLean:0.30, wpos:0.62,
+  topPose:Object.assign({},EZ_TOP), pathCoord:-0.4, bpm:110, softness:0.85, weightFrac:0.55, footSpring:0.85, stepPattern:'even',
+  label:'Good — hip hinge, springy foot (load shared)' };
+const EX_BAD = { mass:72, height:1.75, depth:0.38, kneeForward:0.58, trunkLean:0.05, wpos:0.50,
+  topPose:Object.assign({},EZ_TOP), pathCoord:0.4, bpm:110, softness:0.30, weightFrac:0.55, footSpring:0.20, stepPattern:'even',
+  label:'Bad — upright, flat foot (knee-loaded)' };
+function applyConfig(cfg){
+  Object.assign(state, { mass:cfg.mass, height:cfg.height, depth:cfg.depth, kneeForward:cfg.kneeForward,
+    trunkLean:cfg.trunkLean, wpos:cfg.wpos, topPose:Object.assign({},cfg.topPose), pathCoord:cfg.pathCoord,
+    bpm:cfg.bpm, softness:cfg.softness, weightFrac:cfg.weightFrac, footSpring:cfg.footSpring, stepPattern:cfg.stepPattern });
+  syncAllControls(); document.getElementById('poseLabel').textContent=cfg.label||'Bounce'; recompute();
+}
+function setEasyView(view){
+  const app=document.querySelector('.app');
+  app.classList.toggle('view-ref', view==='ref');
+  app.classList.toggle('view-custom', view==='custom');
+  document.querySelectorAll('#easySel .mode').forEach(x=>x.classList.toggle('active', x.dataset.view===view));
+  if(view==='ref'){
+    state.bounceA=EX_GOOD; state.bounceB=EX_BAD;
+    applyConfig(EX_GOOD); renderCompare();
+    if(!state.playing) togglePlay(true);
+  } else {
+    if(state.playing) togglePlay(false);
+    document.getElementById('easyPlay').textContent='▶ Animate';
+    document.getElementById('poseLabel').textContent='Your bounce';
+  }
+}
+document.querySelectorAll('#easySel .mode').forEach(el=>el.addEventListener('click',()=>setEasyView(el.dataset.view)));
+document.getElementById('easyOpt').addEventListener('click',()=>runOptimizer('easyOptResults'));
+document.getElementById('easyPlay').addEventListener('click',()=>{ togglePlay(); document.getElementById('easyPlay').textContent = state.playing ? '❚❚ Pause' : '▶ Animate'; });
+
+// advanced toggle: switch between Easy mode and the full controls
 document.getElementById('simpleToggle').addEventListener('click',()=>{
-  const on=document.querySelector('.app').classList.toggle('simple');
-  document.getElementById('simpleToggle').textContent = on ? '◑ Show full controls' : '◐ Simple mode';
+  const app=document.querySelector('.app'); const easy=app.classList.toggle('easy');
+  document.getElementById('simpleToggle').textContent = easy ? '⚙ Advanced controls' : '◐ Easy mode';
+  if(easy){ setEasyView('ref'); } else if(state.playing){ togglePlay(false); }
 });
 
-// boot
+// boot — default to Easy mode showing the Good vs Bad comparison, auto-animating
 recompute();
 renderCompare();
+setEasyView('ref');
 </script>
 </body>
 </html>
