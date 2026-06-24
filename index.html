@@ -1020,9 +1020,16 @@ function computeScore(s, cycle, bal){
   const pk=cycle.peak;
   const overEdge = Math.max(0, bal.leanFwd-1, -bal.leanBack-1);
   const balPen = bal.tipping!=='ok' ? (18 + overEdge*40) : (bal.narrow ? 8 : 0);
-  const pen = Math.max(0,pk.react.knee-4)*7 + Math.max(0,pk.react.lumbar-4)*7
-            + Math.max(0,pk.react.ankle-4)*6 + Math.max(0,pk.react.hip-5)*5
-            + Math.max(0,pk.react.mtp-5)*5 + Math.max(0,pk.L-2.6)*16 + balPen;
+  // (a) absolute peak-load penalties — overload territory
+  let pen = Math.max(0,pk.react.knee-3.5)*8 + Math.max(0,pk.react.lumbar-4)*7
+          + Math.max(0,pk.react.ankle-4)*6 + Math.max(0,pk.react.hip-5)*5
+          + Math.max(0,pk.react.mtp-5)*5 + Math.max(0,pk.L-2.6)*16 + balPen;
+  // (b) technique — poor shock absorption (stiff landing + rigid foot) is jarring even at modest loads
+  const sEff = Math.min(1, s.softness + 0.45*footAbsorption(s));
+  pen += Math.max(0, 0.72 - sEff) * 34;
+  // (c) technique — a protective bounce SHARES load down the chain; a bad one CONCENTRATES it on one joint
+  const loads = JOINTS.map(j=>pk.react[j]||0), tot = loads.reduce((a,b)=>a+b,0)||1;
+  pen += Math.max(0, Math.max(...loads)/tot - 0.42) * 55;
   return Math.max(0, Math.min(100, Math.round(100-pen)));
 }
 // snapshot the full current bounce config (for A/B comparison)
