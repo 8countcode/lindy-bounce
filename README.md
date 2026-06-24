@@ -6,6 +6,7 @@ An interactive, illustrative biomechanics visualizer for the **lindy-hop bounce*
 
 ## What it does
 
+- **Easy mode by default (한국어 / English):** opens on a beginner-friendly, mobile-first view with a swipeable carousel of example bounces — a *Good vs Bad* side-by-side comparison, curated single examples (gentle pulse, deep squat, …), and a *Custom* bounce you can drag and optimise. Auto-detects browser language with an EN/한 toggle. The full slider/toggle controls live behind **Advanced controls**.
 - **2D sagittal figure** with a bendy foot, posable joints (drag the knee / hip / head), and a heatmap of load across joints and muscles.
 - **Four load views:** joint reaction force (×BW), joint moment (N·m), muscle eccentric energy (J), and a generic load %.
 - **Dynamics:** a real bounce trajectory with an impact spike at the bottom reversal, a light flight phase when the bounce is energetic, soft-vs-stiff landing, tempo, and single-leg weight share.

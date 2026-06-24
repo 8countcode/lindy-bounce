@@ -107,16 +107,37 @@
   .cmplab{font-size:12px; font-weight:700; margin-bottom:2px}
   .cmpcol svg{width:100%; height:auto}
   .cmpcol .cmpcyc{margin-top:6px; background:var(--panel2) !important}
+  .topbar{display:flex; justify-content:space-between; align-items:center; gap:8px}
+  #langBtn{flex:0 0 auto; white-space:nowrap}
+  /* swipeable example carousel */
+  .carousel{display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px;
+            scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch}
+  .carousel::-webkit-scrollbar{height:6px}
+  .carousel::-webkit-scrollbar-thumb{background:var(--line); border-radius:6px}
+  .carousel .mode{min-width:118px; flex:0 0 auto; scroll-snap-align:start}
+  .carousel .mode span{display:block; font-size:11px; color:var(--muted)}
   /* easy-mode visibility */
   .app:not(.easy) .easybar{display:none}
   .app.easy .adv{display:none}
   .easycustom{display:none}
   .app.easy.view-custom .easycustom{display:block}
   .app.easy.view-custom .compare{display:none}
+  .app.easy.view-one .compare, .app.easy.view-one .posesec{display:none}
   .app.easy.view-ref .figmain, .app.easy.view-ref .posesec{display:none}
   .app.easy.view-ref .col.right{display:none}
   .app.easy.view-ref{grid-template-columns:300px 1fr}
   .easycustom .cbtn{margin:0 6px 6px 0}
+  /* mobile-first: figure/animation prominent, controls below */
+  @media (max-width:760px){
+    .app, .app.easy.view-ref{grid-template-columns:1fr}
+    .col{padding:12px; overflow:visible}
+    .col.left{border-right:none; border-bottom:1px solid var(--line); order:1}
+    .col.center{order:2}
+    .col.right{border-left:none; border-top:1px solid var(--line); order:3}
+    .col.left,.col.right{background:var(--bg)}
+    .stage{max-width:100%}
+    h1{font-size:15px}
+  }
 </style>
 </head>
 <body>
@@ -124,126 +145,127 @@
 
   <!-- ============ LEFT: CONTROLS ============ -->
   <div class="col left">
-    <h1>Bounce Load Lab <span class="pill">v5 · easy</span></h1>
-    <p class="sub">See where a lindy-hop bounce sends its load — and how a good hip-hinge bounce spares the knees and ankles versus a stiff, upright one.</p>
-    <button class="cbtn" id="simpleToggle" style="margin-bottom:8px">⚙ Advanced controls</button>
-    <div class="modes easybar" id="easySel" style="grid-template-columns:1fr 1fr; margin-bottom:10px">
-      <div class="mode active" data-view="ref"><b>Good vs Bad</b>watch &amp; compare</div>
-      <div class="mode" data-view="custom"><b>Custom</b>drag &amp; optimise</div>
+    <div class="topbar">
+      <h1>Bounce Load Lab <span class="pill">v5</span></h1>
+      <button class="cbtn" id="langBtn">🌐 한국어</button>
     </div>
+    <p class="sub" data-i18n="sub">See where a lindy-hop bounce sends its load — and how a good hip-hinge bounce spares the knees and ankles versus a stiff, upright one.</p>
+    <button class="cbtn" id="simpleToggle" style="margin-bottom:8px">⚙ Advanced controls</button>
+    <div class="easybar carouselhint" data-i18n="chooseExample" style="font-size:11.5px;color:var(--muted);margin:2px 0 6px">Choose an example bounce — swipe the cards, then watch it animate.</div>
+    <div class="easybar carousel" id="easySel"></div>
 
     <div class="adv">
-    <h2>Body</h2>
+    <h2 data-i18n="body">Body</h2>
     <div class="field">
-      <label>Body mass <span class="val" id="v_mass">72 kg</span></label>
+      <label><span data-i18n="bodyMass">Body mass</span> <span class="val" id="v_mass">72 kg</span></label>
       <input id="mass" type="range" min="40" max="120" step="1" value="72">
     </div>
     <div class="field">
-      <label>Height <span class="val" id="v_height">175 cm</span></label>
+      <label><span data-i18n="height">Height</span> <span class="val" id="v_height">175 cm</span></label>
       <input id="height" type="range" min="140" max="205" step="1" value="175">
     </div>
     </div>
 
     <div class="posesec">
-    <h2>Bounce pose</h2>
+    <h2 data-i18n="bouncePose">Bounce pose</h2>
     <div class="modes" id="poseEnd" style="grid-template-columns:1fr 1fr; margin-bottom:6px">
-      <div class="mode" data-end="top"><b>Top</b>start of bounce</div>
-      <div class="mode active" data-end="bottom"><b>Bottom</b>deepest point</div>
+      <div class="mode" data-end="top"><b data-i18n="top">Top</b><span data-i18n="topSub">start of bounce</span></div>
+      <div class="mode active" data-end="bottom"><b data-i18n="bottom">Bottom</b><span data-i18n="bottomSub">deepest point</span></div>
     </div>
-    <div class="hint" style="margin:-2px 0 8px">Editing the <b id="editEndLabel">bottom</b> pose — <span class="adv">use the sliders below, or </span>drag the knee, hip &amp; head in the figure to set this end's joint angles. The bounce travels between the two ends.</div>
+    <div class="hint" style="margin:-2px 0 8px"><span data-i18n="poseHintA">Editing the</span> <b id="editEndLabel">bottom</b> <span data-i18n="poseHintB">pose — </span><span class="adv" data-i18n="poseHintSliders">use the sliders below, or </span><span data-i18n="poseHintC">drag the knee, hip &amp; head in the figure to set this end's joint angles. The bounce travels between the two ends.</span></div>
     </div>
     <div class="adv">
     <div class="field">
-      <label>Bounce depth <span class="val" id="v_depth">25%</span></label>
+      <label><span data-i18n="bounceDepth">Bounce depth</span> <span class="val" id="v_depth">25%</span></label>
       <input id="depth" type="range" min="0" max="100" step="1" value="25">
-      <div class="hint">Knee flexion at the lowest point. A lindy pulse is shallow (~10–30%); a deep squat is 80–100%. Also sets how far the body drops (bigger drop → bigger impact).</div>
+      <div class="hint" data-i18n="depthHint">Knee flexion at the lowest point. A lindy pulse is shallow (~10–30%); a deep squat is 80–100%. Also sets how far the body drops (bigger drop → bigger impact).</div>
     </div>
     <div class="field">
-      <label>Knees forward <span class="val" id="v_knee">30%</span></label>
+      <label><span data-i18n="kneesFwd">Knees forward</span> <span class="val" id="v_knee">30%</span></label>
       <input id="knee" type="range" min="0" max="100" step="1" value="30">
-      <div class="hint">Shin lean / knees-past-toes. Drives knee (patellofemoral) load.</div>
+      <div class="hint" data-i18n="kneeHint">Shin lean / knees-past-toes. Drives knee (patellofemoral) load.</div>
     </div>
     <div class="field">
-      <label>Trunk lean <span class="val" id="v_trunk">20%</span></label>
+      <label><span data-i18n="trunkLean">Trunk lean</span> <span class="val" id="v_trunk">20%</span></label>
       <input id="trunk" type="range" min="0" max="100" step="1" value="20">
-      <div class="hint">Forward torso lean. Drives hip &amp; lower-back load.</div>
+      <div class="hint" data-i18n="trunkHint">Forward torso lean. Drives hip &amp; lower-back load.</div>
     </div>
     <div class="field">
-      <label>Forefoot weighting: heel ↔ ball <span class="val" id="v_wpos">55%</span></label>
+      <label><span data-i18n="forefoot">Forefoot weighting: heel ↔ ball</span> <span class="val" id="v_wpos">55%</span></label>
       <input id="wpos" type="range" min="0" max="100" step="1" value="55">
-      <div class="hint">How far forward you ride. It rolls the heel up, shifts your centre of mass forward, and shrinks the base of support to the forefoot — and the contact point keeps moving through the bounce (heel settling at the bottom, ball at push-off).</div>
+      <div class="hint" data-i18n="wposHint">How far forward you ride. It rolls the heel up, shifts your centre of mass forward, and shrinks the base of support to the forefoot — and the contact point keeps moving through the bounce (heel settling at the bottom, ball at push-off).</div>
     </div>
     </div>
 
     <div class="adv">
-    <h2>Dynamics &amp; stance</h2>
+    <h2 data-i18n="dynStance">Dynamics &amp; stance</h2>
     <div class="field">
-      <label>Tempo <span class="val" id="v_bpm">160 BPM</span></label>
+      <label><span data-i18n="tempo">Tempo</span> <span class="val" id="v_bpm">160 BPM</span></label>
       <input id="bpm" type="range" min="80" max="240" step="2" value="160">
-      <div class="hint">One pulse per beat. Faster tempo → a sharper, bigger impact spike for the same bounce size.</div>
+      <div class="hint" data-i18n="tempoHint">One pulse per beat. Faster tempo → a sharper, bigger impact spike for the same bounce size.</div>
     </div>
     <div class="field">
-      <label>Landing softness <span class="val" id="v_soft">60%</span></label>
+      <label><span data-i18n="softness">Landing softness</span> <span class="val" id="v_soft">60%</span></label>
       <input id="softness" type="range" min="0" max="100" step="1" value="60">
-      <div class="hint">How gradually you absorb the bottom reversal. Soft (high) spreads the impulse over time → low spike; stiff (low) = a hard, injurious slam.</div>
+      <div class="hint" data-i18n="softHint">How gradually you absorb the bottom reversal. Soft (high) spreads the impulse over time → low spike; stiff (low) = a hard, injurious slam.</div>
     </div>
     <div class="field">
-      <label>Foot absorption <span class="val" id="v_foot">50%</span></label>
+      <label><span data-i18n="footAbs">Foot absorption</span> <span class="val" id="v_foot">50%</span></label>
       <input id="footSpring" type="range" min="0" max="100" step="1" value="50">
-      <div class="hint">The bendy foot as a shock absorber: rolling onto the ball lets the arch + toe/intrinsic flexors spring and soak up the bounce, sparing the knees — but it loads the forefoot, plantar fascia &amp; Achilles.</div>
+      <div class="hint" data-i18n="footHint">The bendy foot as a shock absorber: rolling onto the ball lets the arch + toe/intrinsic flexors spring and soak up the bounce, sparing the knees — but it loads the forefoot, plantar fascia &amp; Achilles.</div>
     </div>
     <div class="field">
-      <label>Weight on this leg <span class="val" id="v_wfrac">55%</span></label>
+      <label><span data-i18n="weightLeg">Weight on this leg</span> <span class="val" id="v_wfrac">55%</span></label>
       <input id="wfrac" type="range" min="0" max="100" step="1" value="10">
-      <div class="hint">Lindy shifts weight foot-to-foot. 50% = shared across both feet; 100% = full single-leg, which roughly doubles this leg's load.</div>
+      <div class="hint" data-i18n="wfracHint">Lindy shifts weight foot-to-foot. 50% = shared across both feet; 100% = full single-leg, which roughly doubles this leg's load.</div>
     </div>
     <div class="field">
-      <label>Step pattern</label>
+      <label data-i18n="stepPattern">Step pattern</label>
       <div class="modes" id="steps" style="grid-template-columns:1fr 1fr 1fr">
-        <div class="mode active" data-step="even"><b>In place</b>even</div>
-        <div class="mode" data-step="shift"><b>Shift L↔R</b>transfer</div>
-        <div class="mode" data-step="triple"><b>Triple-step</b>1 a 2</div>
+        <div class="mode active" data-step="even"><b data-i18n="inPlace">In place</b><span data-i18n="inPlaceSub">even</span></div>
+        <div class="mode" data-step="shift"><b data-i18n="shift">Shift L↔R</b><span data-i18n="shiftSub">transfer</span></div>
+        <div class="mode" data-step="triple"><b data-i18n="triple">Triple-step</b><span data-i18n="tripleSub">1 a 2</span></div>
       </div>
-      <div class="hint">How weight transfers between feet across beats. The slider above is the peak weight when this leg is the stance foot; press Animate to watch it load &amp; unload.</div>
+      <div class="hint" data-i18n="stepHint">How weight transfers between feet across beats. The slider above is the peak weight when this leg is the stance foot; press Animate to watch it load &amp; unload.</div>
     </div>
     <div class="field">
-      <label>Bounce phase <span class="val" id="v_phase">Bottom</span></label>
+      <label><span data-i18n="bouncePhase">Bounce phase</span> <span class="val" id="v_phase">Bottom</span></label>
       <input id="phase" type="range" min="0" max="100" step="1" value="50">
-      <div class="hint">Scrub the cycle: top → descending → bottom (peak) → rising. Or press Animate to play it.</div>
+      <div class="hint" data-i18n="phaseHint">Scrub the cycle: top → descending → bottom (peak) → rising. Or press Animate to play it.</div>
     </div>
     <div class="btnrow">
-      <button class="btn" id="play">▶ Animate bounce</button>
+      <button class="btn" id="play" data-i18n="animate">▶ Animate bounce</button>
     </div>
 
-    <h2>Optimal path (top ↔ bottom)</h2>
-    <button class="btn" id="optBtn">⚙ Find optimal paths</button>
+    <h2 data-i18n="optPath">Optimal path (top ↔ bottom)</h2>
+    <button class="btn" id="optBtn" data-i18n="findOpt">⚙ Find optimal paths</button>
     <div id="optResults"></div>
 
-    <div class="insight">⏱ <b>Tempo costs more than depth:</b> the bottom impact grows with the <i>square</i> of tempo but only linearly with bounce size — so at fast tempos shrink the bounce rather than just speeding it up. And landing on one leg roughly doubles this limb's load, multiplying with the impact spike.</div>
+    <div class="insight" data-i18n-html="insight1">⏱ <b>Tempo costs more than depth:</b> the bottom impact grows with the <i>square</i> of tempo but only linearly with bounce size.</div>
 
-    <h2>Example motions</h2>
+    <h2 data-i18n="exMotions">Example motions</h2>
     <div class="presets" id="presets"></div>
 
-    <div class="insight">⚖ <b>Knee ↔ spine trade-off:</b> a more forward, hip-dominant hinge lowers knee load but raises hip &amp; lower-back load; a more upright, knee-dominant bounce does the reverse. Good technique keeps <i>both</i> moderate.</div>
+    <div class="insight" data-i18n-html="insight2">⚖ <b>Knee ↔ spine trade-off:</b> a more forward, hip-dominant hinge lowers knee load but raises hip &amp; lower-back load.</div>
 
-    <h2>Technique cues</h2>
-    <details class="cues"><summary>Protecting knees &amp; back over years of dancing</summary>
+    <h2 data-i18n="techCues">Technique cues</h2>
+    <details class="cues"><summary data-i18n="techCuesSummary">Protecting knees &amp; back over years of dancing</summary>
       <ul>
-        <li>Keep knees soft and springy — never lock them, never sink into a deep squat. Live in the small soft-knee range.</li>
-        <li>Track knees over the feet (the knee bends where the toes point). Caving inward or twisting a planted knee on swivels is the #1 knee risk — rotate from the hip and the ball of the foot.</li>
-        <li>Hinge at the hip with a long, neutral spine. The slight lean comes from the hips, not from rounding the lower back.</li>
-        <li>Absorb landings through the whole ankle–knee–hip chain, ball-of-foot first with the heel kissing the floor.</li>
-        <li>Let the <b>foot</b> do its job: roll onto the ball with an active, springy arch so the foot + toe flexors become an extra shock absorber that softens the hit to the knee and hip — but keep it controlled so the forefoot, plantar fascia and Achilles aren't overloaded.</li>
-        <li>Make the bounce <i>smaller</i> as tempo rises — at fast tempos it shrinks to a tiny internal compression.</li>
-        <li>Spring <i>up</i> off the floor (elastic rebound); don't sit <i>down</i> into the dip.</li>
-        <li>Keep weight forward on the balls of the feet with an engaged, braced core.</li>
-        <li>Keep feet under your center of mass — over-striding adds braking shear at the knee and a lumbar reach.</li>
-        <li>Condition calves, ankles and the posterior chain, and warm up before fast social dancing — the bounce is single-leg, forefoot-driven and high-frequency for hours.</li>
+        <li data-i18n="cue1"></li>
+        <li data-i18n="cue2"></li>
+        <li data-i18n="cue3"></li>
+        <li data-i18n="cue4"></li>
+        <li data-i18n="cue5"></li>
+        <li data-i18n="cue6"></li>
+        <li data-i18n="cue7"></li>
+        <li data-i18n="cue8"></li>
+        <li data-i18n="cue9"></li>
+        <li data-i18n="cue10"></li>
       </ul>
     </details>
     </div>
 
-    <p class="disclaimer">Educational and illustrative only — not medical advice. Forces, moments and thresholds are order-of-magnitude estimates from a simplified 2D quasi-static model and population-average literature, not clinical measurements or injury cutoffs. Most of these loads are safely handled by healthy, conditioned joints. Treat the overload flags as caution / learning tiers, not pass/fail. See a physical therapist or sports-medicine professional for any pain or personal risk assessment.</p>
+    <p class="disclaimer" data-i18n="disclaimer">Educational and illustrative only — not medical advice.</p>
   </div>
 
   <!-- ============ CENTER: FIGURE ============ -->
@@ -256,36 +278,36 @@
       </div>
       <svg id="fig" viewBox="0 0 420 540" xmlns="http://www.w3.org/2000/svg" aria-label="Side-view leg load heatmap"></svg>
       <div class="legendbar">
-        <span>low</span><div class="grad"></div><span>high</span>
+        <span data-i18n="low">low</span><div class="grad"></div><span data-i18n="high">high</span>
         <span id="legendMax" style="min-width:74px;text-align:right"></span>
       </div>
       <div class="easycustom" id="easyCustomBar">
-        <div style="font-size:11.5px;color:var(--muted);margin:8px 0 6px">Drag the <b>knee</b>, <b>hip</b> &amp; <b>head</b> to shape the pose. Switch <b>Top</b>/<b>Bottom</b> on the left, then optimise the path between them.</div>
-        <button class="cbtn" id="easyOpt">⚙ Find optimal path</button>
-        <button class="cbtn" id="easyPlay">▶ Animate</button>
+        <div style="font-size:11.5px;color:var(--muted);margin:8px 0 6px" data-i18n="customNote">Drag the knee, hip &amp; head to shape the pose. Switch Top/Bottom on the left, then optimise the path between them.</div>
+        <button class="cbtn" id="easyOpt" data-i18n="findOptShort">⚙ Find optimal path</button>
+        <button class="cbtn" id="easyPlay" data-i18n="animateShort">▶ Animate</button>
         <div id="easyOptResults"></div>
       </div>
       </div>
       <div class="chart adv">
-        <div class="chartlabel"><span>Load through the bounce cycle</span><span id="chartPeak"></span></div>
+        <div class="chartlabel"><span data-i18n="chartCycle">Load through the bounce cycle</span><span id="chartPeak"></span></div>
         <svg id="cyc" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg" aria-label="Load vs bounce phase"></svg>
-        <div class="chartx"><span>↑ top</span><span>bottom · impact</span><span>top ↑</span></div>
+        <div class="chartx"><span data-i18n="cxTop">↑ top</span><span data-i18n="cxBottom">bottom · impact</span><span data-i18n="cxTop2">top ↑</span></div>
       </div>
       <div class="chart adv">
-        <div class="chartlabel"><span>Weight shift across the step pattern</span><span id="stepPeak"></span></div>
+        <div class="chartlabel"><span data-i18n="chartStep">Weight shift across the step pattern</span><span id="stepPeak"></span></div>
         <svg id="stepsvg" viewBox="0 0 520 80" xmlns="http://www.w3.org/2000/svg" aria-label="Weight shift across the step pattern"></svg>
       </div>
       <div class="compare">
         <div class="cmphdr">
-          <span>Compare two bounces</span>
+          <span data-i18n="cmpTitle">Compare two bounces</span>
           <span class="cmpctrls">
-            <button class="cbtn" id="saveA">Save as A</button>
-            <button class="cbtn" id="saveB">Save as B</button>
+            <button class="cbtn" id="saveA" data-i18n="saveA">Save as A</button>
+            <button class="cbtn" id="saveB" data-i18n="saveB">Save as B</button>
             <select id="cmpMetric">
-              <option value="jr">Joint reaction (×BW)</option>
-              <option value="jm">Joint moment (N·m)</option>
-              <option value="mf">Muscle force (×BW)</option>
-              <option value="me">Muscle energy (J)</option>
+              <option value="jr" data-i18n="mJointReaction">Joint reaction (×BW)</option>
+              <option value="jm" data-i18n="mJointMoment">Joint moment (N·m)</option>
+              <option value="mf" data-i18n="mMuscleForce">Muscle force (×BW)</option>
+              <option value="me" data-i18n="mMuscleEnergy">Muscle energy (J)</option>
             </select>
           </span>
         </div>
@@ -305,39 +327,39 @@
 
   <!-- ============ RIGHT: READOUT ============ -->
   <div class="col right">
-    <h1>Distribution</h1>
+    <h1 data-i18n="distribution">Distribution</h1>
 
     <div class="modes" id="modes"></div>
 
-    <h2>At the bottom (peak load)</h2>
+    <h2 data-i18n="atBottom">At the bottom (peak load)</h2>
     <div class="peakgrid">
-      <div class="peakcell"><div class="big" id="pkL">—</div><div class="lbl">impact factor<br>GRF ÷ bodyweight</div></div>
+      <div class="peakcell"><div class="big" id="pkL">—</div><div class="lbl"><span data-i18n="impactFactor">impact factor</span><br><span data-i18n="grfDivBw">GRF ÷ bodyweight</span></div></div>
       <div class="peakcell"><div class="big" id="pkJoint">—</div><div class="lbl" id="pkJointName">peak joint</div></div>
     </div>
 
-    <h2>Balance (fore–aft)</h2>
+    <h2 data-i18n="balance">Balance (fore–aft)</h2>
     <svg id="balsvg" viewBox="0 0 300 54" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;background:var(--panel2);border:1px solid var(--line);border-radius:8px"></svg>
     <div id="balText" style="font-size:11.5px;color:var(--muted);margin-top:5px"></div>
 
-    <h2>Joint-protection score</h2>
+    <h2 data-i18n="protScore">Joint-protection score</h2>
     <div class="score">
       <div class="big" id="scoreVal">—</div>
-      <div class="lbl">higher = lower peak load,<br>better shared across all phases</div>
+      <div class="lbl"><span data-i18n="protScoreSub">higher = lower peak load,</span><br><span data-i18n="protScoreSub2">better shared across all phases</span></div>
     </div>
     <div class="bar"><i id="scoreBar" style="width:0%"></i></div>
 
-    <h2>Flags</h2>
+    <h2 data-i18n="flags">Flags</h2>
     <div id="flags"></div>
 
-    <h2>Joints</h2>
+    <h2 data-i18n="joints">Joints</h2>
     <table>
-      <thead><tr><th>Joint</th><th class="num">Moment</th><th class="num">Reaction</th></tr></thead>
+      <thead><tr><th data-i18n="joints">Joint</th><th class="num" data-i18n="moment">Moment</th><th class="num" data-i18n="reaction">Reaction</th></tr></thead>
       <tbody id="jointRows"></tbody>
     </table>
 
-    <h2>Muscles</h2>
+    <h2 data-i18n="muscles">Muscles</h2>
     <table>
-      <thead><tr><th>Muscle</th><th class="num">Force</th><th class="num">Energy ↓</th></tr></thead>
+      <thead><tr><th data-i18n="muscles">Muscle</th><th class="num" data-i18n="force">Force</th><th class="num" data-i18n="energy">Energy ↓</th></tr></thead>
       <tbody id="muscleRows"></tbody>
     </table>
   </div>
@@ -397,6 +419,252 @@ const state = {
   bpm: 160, softness: 0.60, weightFrac: 0.55, footSpring: 0.50, stepPattern: 'even', phase: 0.50,
   mode: 'reaction', playing: false,
 };
+
+// ===================== i18n (English / 한국어) =====================
+let LANG = (localStorage.getItem('blab_lang')) || ((navigator.language||'en').toLowerCase().startsWith('ko') ? 'ko' : 'en');
+const TXT = {
+  en: {
+    sub:"See where a lindy-hop bounce sends its load — and how a good hip-hinge bounce spares the knees and ankles versus a stiff, upright one.",
+    adv:"⚙ Advanced controls", easyBtn:"◐ Easy mode",
+    evGood:"Good vs Bad", evGoodSub:"watch & compare", evCustom:"Custom", evCustomSub:"drag & optimise",
+    body:"Body", bodyMass:"Body mass", height:"Height",
+    bouncePose:"Bounce pose", top:"Top", topSub:"start of bounce", bottom:"Bottom", bottomSub:"deepest point",
+    poseHintA:"Editing the", poseHintB:"pose — ", poseHintSliders:"use the sliders below, or ", poseHintC:"drag the knee, hip & head in the figure to set this end's joint angles. The bounce travels between the two ends.",
+    bounceDepth:"Bounce depth", kneesFwd:"Knees forward", trunkLean:"Trunk lean", forefoot:"Forefoot weighting: heel ↔ ball",
+    dynStance:"Dynamics & stance", tempo:"Tempo", softness:"Landing softness", footAbs:"Foot absorption", weightLeg:"Weight on this leg",
+    stepPattern:"Step pattern", inPlace:"In place", inPlaceSub:"even", shift:"Shift L↔R", shiftSub:"transfer", triple:"Triple-step", tripleSub:"1 a 2",
+    bouncePhase:"Bounce phase", animate:"▶ Animate bounce", pause:"❚❚ Pause", animateShort:"▶ Animate",
+    optPath:"Optimal path (top ↔ bottom)", findOpt:"⚙ Find optimal paths", findOptShort:"⚙ Find optimal path",
+    exMotions:"Example motions", techCues:"Technique cues", techCuesSummary:"Protecting knees & back over years of dancing",
+    distribution:"Distribution", atBottom:"At the bottom (peak load)", impactFactor:"impact factor", grfDivBw:"GRF ÷ bodyweight", peakJoint:"peak joint", peakReaction:"peak reaction",
+    balance:"Balance (fore–aft)", protScore:"Joint-protection score", protScoreSub:"higher = lower peak load,",  protScoreSub2:"better shared across all phases",
+    flags:"Flags", joints:"Joints", muscles:"Muscles", moment:"Moment", reaction:"Reaction", force:"Force", energy:"Energy ↓",
+    mReaction:"Joint reaction", mReactionSub:"force on joints", mEnergy:"Muscle energy", mEnergySub:"eccentric work", mMoment:"Joint moment", mMomentSub:"torque demand", mLoad:"Overall load %", mLoadSub:"single heatmap",
+    cmpTitle:"Compare two bounces", saveA:"Save as A", saveB:"Save as B", load:"load",
+    mJointReaction:"Joint reaction (×BW)", mJointMoment:"Joint moment (N·m)", mMuscleForce:"Muscle force (×BW)", mMuscleEnergy:"Muscle energy (J)",
+    customNote:"Drag the knee, hip & head to shape the pose. Switch Top/Bottom on the left, then optimise the path between them.",
+    jMtp:"Ball of foot (MTP)", jAnkle:"Ankle", jKnee:"Knee", jHip:"Hip", jLumbar:"L5/S1 (low back)",
+    yourBounce:"Your bounce", optimisedPath:"Optimised path", customBounce:"Custom bounce", balancedTxt:"balanced",
+    tipForward:"forward", tipBackward:"backward", impact:"impact", score:"score",
+    balOk:"Balanced", balTip:"Tipping",
+    langName:"한국어", langToggle:"🌐 한국어", low:"low", high:"high",
+    chooseExample:"Choose an example bounce — swipe the cards, then watch it animate.",
+    depthHint:"Knee flexion at the lowest point. A lindy pulse is shallow (~10–30%); a deep squat is 80–100%. Bigger drop → bigger impact.",
+    kneeHint:"Shin lean / knees-past-toes. Drives knee (patellofemoral) load.",
+    trunkHint:"Forward torso lean. Drives hip & lower-back load.",
+    wposHint:"How far forward you ride. It rolls the heel up, shifts your centre of mass forward, and shrinks the base of support to the forefoot — and the contact point keeps moving through the bounce.",
+    tempoHint:"One pulse per beat. Faster tempo → a sharper, bigger impact spike for the same bounce size.",
+    softHint:"How gradually you absorb the bottom reversal. Soft (high) spreads the impulse over time → low spike; stiff (low) = a hard, injurious slam.",
+    footHint:"The bendy foot as a shock absorber: rolling onto the ball lets the arch + toe/intrinsic flexors spring and soak up the bounce, sparing the knees — but it loads the forefoot, plantar fascia & Achilles.",
+    wfracHint:"Lindy shifts weight foot-to-foot. 50% = shared across both feet; 100% = full single-leg, which roughly doubles this leg's load.",
+    stepHint:"How weight transfers between feet across beats. The slider above is the peak weight when this leg is the stance foot; press Animate to watch it load & unload.",
+    phaseHint:"Scrub the cycle: top → descending → bottom (peak) → rising. Or press Animate to play it.",
+    insight1:"⏱ <b>Tempo costs more than depth:</b> the bottom impact grows with the <i>square</i> of tempo but only linearly with bounce size — so at fast tempos shrink the bounce rather than just speeding it up. And landing on one leg roughly doubles this limb's load, multiplying with the impact spike.",
+    insight2:"⚖ <b>Knee ↔ spine trade-off:</b> a more forward, hip-dominant hinge lowers knee load but raises hip & lower-back load; a more upright, knee-dominant bounce does the reverse. Good technique keeps <i>both</i> moderate.",
+    disclaimer:"Educational and illustrative only — not medical advice. Forces, moments and thresholds are order-of-magnitude estimates from a simplified 2D quasi-static model and population-average literature, not clinical measurements or injury cutoffs. Most of these loads are safely handled by healthy, conditioned joints. Treat the overload flags as caution / learning tiers, not pass/fail. See a physical therapist or sports-medicine professional for any pain or personal risk assessment.",
+    chartCycle:"Load through the bounce cycle", chartStep:"Weight shift across the step pattern",
+    cxTop:"↑ top", cxBottom:"bottom · impact", cxTop2:"top ↑",
+    cmpPlaceholder:"Set up a bounce and click <b>Save as A</b>, then change it and click <b>Save as B</b> to compare the two.",
+    vt_reaction:"Joint reaction force", vu_reaction:"×body-weight",
+    vt_moment:"Joint moment (torque)", vu_moment:"N·m",
+    vt_energy:"Muscle energy absorbed", vu_energy:"joules",
+    vt_load:"Overall load", vu_load:"% of limit",
+    jl_mtp:"Ball of foot (MTP)", jl_ankle:"Ankle", jl_knee:"Knee", jl_hip:"Hip", jl_lumbar:"L5/S1 (low back)",
+    ml_footflex:"Foot flexors / arch", ml_quad:"Quadriceps", ml_ham:"Hamstrings", ml_glute:"Glutes", ml_calf:"Calf (gastroc/soleus)", ml_tibant:"Tibialis ant.", ml_erector:"Erector spinae",
+    ph_top:"Top", ph_desc:"Descending", ph_bottom:"Bottom", ph_rising:"Rising",
+    balOkMsg:" — the moving CoM (blue band; amber = motion-adjusted extremes) stays over the base of support (green) all bounce.",
+    balTipMsg:" — the CoM passes {edge} during the bounce, so you would fall {dir}.",
+    edgeToes:"the toes", edgeHeel:"the heel/ball",
+    peakReactionLbl:"peak reaction",
+    cmpImpact:"impact", cmpScore:"score", cmpBalanced:"balanced", cmpTip:"tipping", cmpLoad:"load",
+    optLowPeak:"Lowest peak load", optLowPeakD:"min worst-moment", optLowCum:"Lowest cumulative", optLowCumD:"min total load",
+    optSmooth:"Smoothest", optSmoothD:"flattest load profile", optBalanced:"Most balanced", optBalancedD:"CoM kept safest over the base",
+    optHipLed:"hip-led", optKneeLed:"knee-led", optSync:"synchronised", optSoft:"soft", optPeak:"peak", optTotal:"total", optOffBal:"off-balance", optBal:"balanced", optApply:"apply",
+    plCustom:"Custom bounce", plYour:"Your bounce", plOpt:"Optimised path", plDragged:"Dragged {end} pose", plLoaded:"{label} (loaded {k})",
+    endTop:"top", endBottom:"bottom",
+    stepInPlace:"bounce in place", stepShift:"L ↔ R weight shift · 2 beats", stepTriple:"triple-step (1 a 2) · 2 beats",
+    cycPeakLbl:"peak {joint} {val} · impact {L}×", airborne:" · ✈ {pct}% airborne",
+    flOverT:"Joint overload — demand exceeds capacity",
+    flOverB:"At the worst phase the {j} demands more moment than the muscles can safely produce (~2–3 N·m/kg). This posture can't be held statically — it forces a fall, a violent catch, or tissue strain{tip}.",
+    flOverTip:" (and you are tipping {dir})",
+    flImpactHardT:"Hard landing — impact spike",
+    flImpactHardB:"The bottom reversal hits {L}× bodyweight — drop-landing territory, and a bounce repeats it every beat. Soften the knees and make the bounce smaller/slower.",
+    flImpactSnapT:"Snappy reversal",
+    flImpactSnapB:"Bottom impact {L}×BW. A softer, more absorbed sink spreads the impulse over more time and lowers the peak.",
+    flKneeT:"High knee load at the bottom",
+    flKneeBad:"Knee reaction is in overload — deep flexion + knees-forward + the impact spike compound on the patellofemoral/tibiofemoral joint. Stay shallower, knees tracking the toes.",
+    flKneeWarn:"Knee load is elevated — ease depth or keep the knees from driving past the toes.",
+    flLumbarT:"High lower-back load",
+    flLumbarBad:"L5/S1 compression is in overload — forward lean cantilevers the spine the whole cycle. Stack the torso and hinge from the hip with a neutral spine.",
+    flLumbarWarn:"Lower-back load is elevated — bring the torso more upright.",
+    flAnkleT:"High Achilles / ankle load",
+    flAnkleBad:"Achilles/ankle load is in overload — deep, ballistic, on the balls of the feet. Let the heel kiss the floor and soften the dip.",
+    flAnkleWarn:"Achilles/ankle load is elevated — let the heel settle and soften the bottom.",
+    flMtpT:"High forefoot / ball-of-foot load",
+    flMtpBad:"Ball-of-foot load is in overload — a deep, ballistic, heels-up bounce hammers the forefoot, MTP joint and plantar fascia. Soften the dip and let the heel settle between bounces.",
+    flMtpWarn:"Forefoot load is elevated — let the heel kiss the floor between bounces.",
+    flSingleT:"Single-leg overload",
+    flSingleB:"Almost all weight lands on one leg — per-leg load roughly doubles (the hip ~2.5–3×) and multiplies with the impact spike. If single-leg is unavoidable, make that leg the softest.",
+    flTipFT:"Tipping forward",
+    flTipFB:"The moving centre of mass passes the toes during the bounce — you would fall forward. Sit into the hips, ease the trunk lean, or keep the heel down for a longer base.",
+    flTipBT:"Tipping backward",
+    flTipBB:"The CoM passes behind the base — you would fall backward. Bring the weight forward over the foot; don't ride the heels while sitting deep.",
+    flNarrowT:"Narrow balance margin",
+    flNarrowB:"The CoM rides close to the edge of the base of support — little room before tipping (common up on the ball, where the forefoot base is small).",
+    flFootT:"Foot absorbing the bounce",
+    flFootB:"The bendy forefoot, arch and toe/intrinsic flexors are soaking up the impact (~{pct}% foot spring), sparing the knees and hips.",
+    flGoodT:"Well-distributed",
+    flGoodB:"Low impact, shared across the muscles, joints kept moderate through every phase. A protective bounce.",
+    cue1:"Send your butt back — hinge at the hip with a long, neutral spine. The lean comes from the hips, not from rounding the lower back.",
+    cue2:"Don't let your knees chase your toes — keep the shin quieter so the bounce shares load down the ankle→knee→hip chain instead of dumping it on the knee.",
+    cue3:"Soft ankles, soft knees — never lock them and never sink into a deep squat. Live in the small soft-knee range.",
+    cue4:"Spring UP off the floor (elastic rebound); don't sit DOWN into the dip.",
+    cue5:"Land ball-of-foot first with the heel kissing the floor, absorbing through the whole ankle–knee–hip chain.",
+    cue6:"Let the foot do its job — roll onto a springy arch so the foot + toe flexors become an extra shock absorber, but keep it controlled so the forefoot, plantar fascia and Achilles aren't overloaded.",
+    cue7:"Track the knee over the foot — caving inward or twisting a planted knee on swivels is the #1 knee risk; rotate from the hip and the ball of the foot.",
+    cue8:"Make the bounce SMALLER as the tempo rises — at fast tempos it shrinks to a tiny internal compression.",
+    cue9:"Keep feet under your centre of mass — over-striding adds braking shear at the knee and a lumbar reach.",
+    cue10:"Condition calves, ankles and the posterior chain, and warm up — the bounce is single-leg, forefoot-driven and high-frequency for hours.",
+    cardRefT:"Good vs Bad", cardRefS:"compare side-by-side",
+    cardGoodT:"Good", cardGoodS:"hip hinge, springy foot",
+    cardBadT:"Bad", cardBadS:"upright, flat foot",
+    cardGentleT:"Gentle pulse", cardGentleS:"tiny, soft Savoy",
+    cardDeepT:"Deep squat", cardDeepS:"heavy & stiff slam",
+    cardCustomT:"Custom", cardCustomS:"drag & optimise",
+    exGood:"Good — hip hinge, springy foot (load shared)",
+    exBad:"Bad — upright, flat foot (knee-loaded)",
+    exGentle:"Gentle Savoy pulse — tiny, soft, muscle-loaded",
+    exDeep:"Deep squat-bounce — knee-loaded, stiff slam",
+  },
+  ko: {
+    sub:"린디합 바운스가 부하를 어디로 보내는지 — 그리고 엉덩이를 접는 좋은 바운스가 뻣뻣하게 선 바운스보다 무릎과 발목을 어떻게 보호하는지 보여줍니다.",
+    adv:"⚙ 고급 설정", easyBtn:"◐ 쉬운 모드",
+    evGood:"좋은 vs 나쁜", evGoodSub:"보고 비교하기", evCustom:"직접 만들기", evCustomSub:"끌어서 최적화",
+    body:"신체", bodyMass:"체중", height:"키",
+    bouncePose:"바운스 자세", top:"위", topSub:"바운스 시작", bottom:"아래", bottomSub:"가장 깊은 지점",
+    poseHintA:"편집 중:", poseHintB:" 자세 — ", poseHintSliders:"아래 슬라이더를 쓰거나, ", poseHintC:"그림에서 무릎·엉덩이·머리를 끌어 이 자세의 관절 각도를 정하세요. 바운스는 두 자세 사이를 오갑니다.",
+    bounceDepth:"바운스 깊이", kneesFwd:"무릎 전방", trunkLean:"상체 기울기", forefoot:"발 앞쪽 체중: 뒤꿈치 ↔ 앞꿈치",
+    dynStance:"동역학 & 스탠스", tempo:"템포", softness:"착지 부드러움", footAbs:"발 흡수", weightLeg:"이 다리의 체중",
+    stepPattern:"스텝 패턴", inPlace:"제자리", inPlaceSub:"균등", shift:"좌↔우 이동", shiftSub:"체중 이동", triple:"트리플 스텝", tripleSub:"1 앤 2",
+    bouncePhase:"바운스 단계", animate:"▶ 바운스 재생", pause:"❚❚ 일시정지", animateShort:"▶ 재생",
+    optPath:"최적 경로 (위 ↔ 아래)", findOpt:"⚙ 최적 경로 찾기", findOptShort:"⚙ 최적 경로 찾기",
+    exMotions:"예시 동작", techCues:"테크닉 팁", techCuesSummary:"오랜 춤 생활 동안 무릎과 허리 보호하기",
+    distribution:"부하 분포", atBottom:"바닥에서 (최대 부하)", impactFactor:"충격 계수", grfDivBw:"지면반력 ÷ 체중", peakJoint:"최대 관절", peakReaction:"최대 반력",
+    balance:"균형 (앞–뒤)", protScore:"관절 보호 점수", protScoreSub:"높을수록 = 최대 부하 낮음,", protScoreSub2:"모든 단계에 고르게 분산",
+    flags:"경고", joints:"관절", muscles:"근육", moment:"모멘트", reaction:"반력", force:"힘", energy:"에너지 ↓",
+    mReaction:"관절 반력", mReactionSub:"관절에 가해지는 힘", mEnergy:"근육 에너지", mEnergySub:"신장성 일", mMoment:"관절 모멘트", mMomentSub:"토크 부하", mLoad:"전체 부하 %", mLoadSub:"단일 히트맵",
+    cmpTitle:"두 바운스 비교", saveA:"A로 저장", saveB:"B로 저장", load:"불러오기",
+    mJointReaction:"관절 반력 (×체중)", mJointMoment:"관절 모멘트 (N·m)", mMuscleForce:"근육 힘 (×체중)", mMuscleEnergy:"근육 에너지 (J)",
+    customNote:"무릎·엉덩이·머리를 끌어 자세를 만드세요. 왼쪽에서 위/아래를 전환한 뒤, 둘 사이 경로를 최적화하세요.",
+    jMtp:"앞꿈치 (MTP)", jAnkle:"발목", jKnee:"무릎", jHip:"엉덩이", jLumbar:"L5/S1 (허리)",
+    yourBounce:"내 바운스", optimisedPath:"최적화된 경로", customBounce:"커스텀 바운스", balancedTxt:"균형 잡힘",
+    tipForward:"앞으로", tipBackward:"뒤로", impact:"충격", score:"점수",
+    balOk:"균형 잡힘", balTip:"쓰러짐:",
+    langName:"English", langToggle:"🌐 English", low:"낮음", high:"높음",
+    chooseExample:"예시 바운스를 골라보세요 — 카드를 넘긴 뒤 움직임을 확인하세요.",
+    depthHint:"가장 낮은 지점에서의 무릎 굽힘. 린디 펄스는 얕고(~10–30%), 깊은 스쿼트는 80–100%. 더 깊이 내려갈수록 → 충격도 커집니다.",
+    kneeHint:"정강이 기울기 / 무릎이 발끝을 넘는 정도. 무릎(슬개대퇴) 부하를 좌우합니다.",
+    trunkHint:"상체를 앞으로 기울이는 정도. 엉덩이와 허리 부하를 좌우합니다.",
+    wposHint:"얼마나 앞쪽으로 체중을 싣는지. 뒤꿈치를 들고 무게중심을 앞으로 옮기며 지지면을 앞꿈치로 좁힙니다 — 접촉점은 바운스 내내 계속 움직입니다.",
+    tempoHint:"한 박에 한 번 펄스. 템포가 빠를수록 같은 크기라도 → 더 날카롭고 큰 충격이 생깁니다.",
+    softHint:"바닥 반환점을 얼마나 부드럽게 흡수하는지. 부드러우면(높음) 충격을 시간에 분산 → 낮은 피크; 뻣뻣하면(낮음) = 거칠고 해로운 충격.",
+    footHint:"발을 충격 흡수기로: 앞꿈치로 구르면 아치 + 발가락/내재근이 스프링처럼 바운스를 흡수해 무릎을 보호 — 대신 앞꿈치·족저근막·아킬레스에 부하가 갑니다.",
+    wfracHint:"린디는 발에서 발로 체중을 옮깁니다. 50% = 양발 분담; 100% = 완전 한 다리로, 이 다리 부하가 약 2배가 됩니다.",
+    stepHint:"박마다 발 사이로 체중이 옮겨지는 방식. 위 슬라이더는 이 다리가 지지발일 때의 최대 체중입니다; 재생을 눌러 부하/이완을 보세요.",
+    phaseHint:"사이클을 스크럽: 위 → 내려감 → 바닥(피크) → 올라감. 또는 재생을 누르세요.",
+    insight1:"⏱ <b>템포가 깊이보다 더 비쌉니다:</b> 바닥 충격은 템포의 <i>제곱</i>으로 커지지만 바운스 크기에는 비례만 합니다 — 빠른 템포에서는 속도만 올리지 말고 바운스를 줄이세요. 한 다리 착지는 이 다리 부하를 약 2배로 만들어 충격과 곱해집니다.",
+    insight2:"⚖ <b>무릎 ↔ 척추 트레이드오프:</b> 앞으로 더 숙인 엉덩이 주도 힌지는 무릎 부하를 낮추지만 엉덩이·허리 부하를 높이고, 더 곧게 선 무릎 주도 바운스는 반대입니다. 좋은 기술은 <i>둘 다</i> 적당하게 유지합니다.",
+    disclaimer:"교육·예시용일 뿐 의학적 조언이 아닙니다. 힘·모멘트·임계값은 단순화된 2D 준정적 모델과 인구 평균 문헌에서 나온 자릿수 수준의 추정치이며, 임상 측정값이나 부상 기준이 아닙니다. 대부분의 부하는 건강하고 단련된 관절이 안전하게 감당합니다. 과부하 경고는 합격/불합격이 아니라 주의·학습 단계로 보세요. 통증이나 개인 위험 평가는 물리치료사나 스포츠의학 전문가와 상담하세요.",
+    chartCycle:"바운스 사이클 동안의 부하", chartStep:"스텝 패턴에 따른 체중 이동",
+    cxTop:"↑ 위", cxBottom:"바닥 · 충격", cxTop2:"위 ↑",
+    cmpPlaceholder:"바운스를 설정하고 <b>A로 저장</b>을 누른 뒤, 바꿔서 <b>B로 저장</b>을 누르면 둘을 비교합니다.",
+    vt_reaction:"관절 반력", vu_reaction:"×체중",
+    vt_moment:"관절 모멘트 (토크)", vu_moment:"N·m",
+    vt_energy:"근육 흡수 에너지", vu_energy:"줄(J)",
+    vt_load:"전체 부하", vu_load:"한계 대비 %",
+    jl_mtp:"앞꿈치 (MTP)", jl_ankle:"발목", jl_knee:"무릎", jl_hip:"엉덩이", jl_lumbar:"L5/S1 (허리)",
+    ml_footflex:"발 굴근 / 아치", ml_quad:"대퇴사두근", ml_ham:"햄스트링", ml_glute:"둔근", ml_calf:"종아리 (비복/가자미근)", ml_tibant:"전경골근", ml_erector:"척추기립근",
+    ph_top:"위", ph_desc:"내려감", ph_bottom:"바닥", ph_rising:"올라감",
+    balOkMsg:" — 움직이는 무게중심(파란 띠; 황색 = 동작 보정 범위)이 바운스 내내 지지면(초록) 위에 머뭅니다.",
+    balTipMsg:" — 바운스 중 무게중심이 {edge}를 넘어가 {dir} 넘어지게 됩니다.",
+    edgeToes:"발끝", edgeHeel:"뒤꿈치/앞꿈치",
+    peakReactionLbl:"최대 반력",
+    cmpImpact:"충격", cmpScore:"점수", cmpBalanced:"균형", cmpTip:"쓰러짐", cmpLoad:"불러오기",
+    optLowPeak:"최저 피크 부하", optLowPeakD:"최악 모멘트 최소화", optLowCum:"최저 누적 부하", optLowCumD:"총 부하 최소화",
+    optSmooth:"가장 매끄러움", optSmoothD:"가장 평탄한 부하 곡선", optBalanced:"가장 균형적", optBalancedD:"무게중심을 지지면 위 가장 안전하게",
+    optHipLed:"엉덩이 주도", optKneeLed:"무릎 주도", optSync:"동기화", optSoft:"부드러움", optPeak:"피크", optTotal:"총", optOffBal:"불균형", optBal:"균형", optApply:"적용",
+    plCustom:"커스텀 바운스", plYour:"내 바운스", plOpt:"최적화된 경로", plDragged:"{end} 자세 드래그됨", plLoaded:"{label} ({k} 불러옴)",
+    endTop:"위", endBottom:"아래",
+    stepInPlace:"제자리 바운스", stepShift:"좌 ↔ 우 체중 이동 · 2박", stepTriple:"트리플 스텝 (1 앤 2) · 2박",
+    cycPeakLbl:"최대 {joint} {val} · 충격 {L}×", airborne:" · ✈ {pct}% 공중",
+    flOverT:"관절 과부하 — 수요가 능력을 초과",
+    flOverB:"최악 단계에서 {j}이(가) 근육이 안전하게 낼 수 있는 모멘트(~2–3 N·m/kg)보다 큰 힘을 요구합니다. 이 자세는 정적으로 유지할 수 없어 — 넘어지거나, 거칠게 버티거나, 조직이 손상됩니다{tip}.",
+    flOverTip:" (게다가 {dir} 쓰러지는 중)",
+    flImpactHardT:"거친 착지 — 충격 스파이크",
+    flImpactHardB:"바닥 반환점이 체중의 {L}배에 달합니다 — 드롭 착지 수준이고, 바운스는 매 박 이를 반복합니다. 무릎을 부드럽게 하고 바운스를 더 작게/느리게 하세요.",
+    flImpactSnapT:"날카로운 반환",
+    flImpactSnapB:"바닥 충격 {L}×체중. 더 부드럽게 흡수하며 가라앉으면 충격이 시간에 분산되어 피크가 낮아집니다.",
+    flKneeT:"바닥에서 무릎 부하 높음",
+    flKneeBad:"무릎 반력이 과부하 — 깊은 굽힘 + 무릎 전방 + 충격 스파이크가 슬개대퇴/경대퇴 관절에 겹칩니다. 더 얕게, 무릎은 발끝을 따라가게 하세요.",
+    flKneeWarn:"무릎 부하가 높습니다 — 깊이를 줄이거나 무릎이 발끝을 넘지 않게 하세요.",
+    flLumbarT:"허리 부하 높음",
+    flLumbarBad:"L5/S1 압박이 과부하 — 앞으로 숙임이 사이클 내내 척추를 캔틸레버처럼 만듭니다. 상체를 세우고 중립 척추로 엉덩이에서 힌지하세요.",
+    flLumbarWarn:"허리 부하가 높습니다 — 상체를 더 곧게 세우세요.",
+    flAnkleT:"아킬레스 / 발목 부하 높음",
+    flAnkleBad:"아킬레스/발목 부하가 과부하 — 깊고 탄도적이며 앞꿈치 위주입니다. 뒤꿈치가 바닥에 닿게 하고 바닥을 부드럽게 하세요.",
+    flAnkleWarn:"아킬레스/발목 부하가 높습니다 — 뒤꿈치를 내리고 바닥을 부드럽게 하세요.",
+    flMtpT:"앞꿈치 / 볼 부하 높음",
+    flMtpBad:"앞꿈치 부하가 과부하 — 깊고 탄도적이며 뒤꿈치를 든 바운스가 앞꿈치·MTP 관절·족저근막을 때립니다. 바닥을 부드럽게 하고 바운스 사이에 뒤꿈치를 내리세요.",
+    flMtpWarn:"앞꿈치 부하가 높습니다 — 바운스 사이에 뒤꿈치를 바닥에 닿게 하세요.",
+    flSingleT:"한 다리 과부하",
+    flSingleB:"거의 모든 체중이 한 다리에 실립니다 — 다리당 부하가 약 2배(엉덩이는 ~2.5–3배)가 되고 충격 스파이크와 곱해집니다. 한 다리가 불가피하면 그 다리를 가장 부드럽게 하세요.",
+    flTipFT:"앞으로 쓰러짐",
+    flTipFB:"움직이는 무게중심이 바운스 중 발끝을 넘어 — 앞으로 넘어지게 됩니다. 엉덩이로 앉고, 상체 기울기를 줄이거나, 뒤꿈치를 내려 지지면을 넓히세요.",
+    flTipBT:"뒤로 쓰러짐",
+    flTipBB:"무게중심이 지지면 뒤로 넘어가 — 뒤로 넘어지게 됩니다. 체중을 발 위 앞쪽으로 가져오고, 깊이 앉으며 뒤꿈치를 타지 마세요.",
+    flNarrowT:"균형 여유 좁음",
+    flNarrowB:"무게중심이 지지면 가장자리에 가깝습니다 — 넘어지기까지 여유가 거의 없습니다(앞꿈치 위에서 흔함, 앞발 지지면이 좁음).",
+    flFootT:"발이 바운스를 흡수 중",
+    flFootB:"유연한 앞꿈치·아치·발가락/내재근이 충격을 흡수하며(~{pct}% 발 스프링) 무릎과 엉덩이를 보호합니다.",
+    flGoodT:"부하가 잘 분산됨",
+    flGoodB:"낮은 충격, 근육 전반에 분담, 모든 단계에서 관절을 적당히 유지. 보호적인 바운스입니다.",
+    cue1:"엉덩이를 뒤로 보내세요 — 길고 중립적인 척추로 엉덩이에서 힌지. 기울기는 허리를 굽혀서가 아니라 엉덩이에서 나옵니다.",
+    cue2:"무릎이 발끝을 쫓지 않게 — 정강이를 덜 움직여 부하를 무릎에 몰지 말고 발목→무릎→엉덩이 사슬로 나누세요.",
+    cue3:"부드러운 발목, 부드러운 무릎 — 절대 잠그지 말고 깊은 스쿼트로 가라앉지 마세요. 작은 소프트-니 범위에 머무세요.",
+    cue4:"바닥을 밀며 위로 튀어 오르세요(탄성 반동); 아래로 주저앉지 마세요.",
+    cue5:"앞꿈치부터 착지하고 뒤꿈치가 바닥에 닿게 하며 발목–무릎–엉덩이 사슬 전체로 흡수하세요.",
+    cue6:"발이 제 역할을 하게 — 탄력 있는 아치로 굴러 발 + 발가락 굴근을 추가 충격 흡수기로 쓰되, 앞꿈치·족저근막·아킬레스가 과부하되지 않게 절제하세요.",
+    cue7:"무릎을 발 위로 정렬 — 안으로 무너지거나 디딘 무릎을 스위블에서 비트는 것이 무릎 부상 1순위; 엉덩이와 앞꿈치에서 회전하세요.",
+    cue8:"템포가 빨라질수록 바운스를 더 작게 — 빠른 템포에서는 아주 작은 내부 압축으로 줄어듭니다.",
+    cue9:"발을 무게중심 아래에 두세요 — 보폭이 너무 넓으면 무릎에 제동 전단력과 허리 늘림이 더해집니다.",
+    cue10:"종아리·발목·후면 사슬을 단련하고 워밍업하세요 — 바운스는 한 다리, 앞꿈치 주도, 고빈도로 몇 시간 이어집니다.",
+    cardRefT:"좋은 vs 나쁜", cardRefS:"나란히 비교",
+    cardGoodT:"좋은", cardGoodS:"엉덩이 힌지, 탄력 발",
+    cardBadT:"나쁜", cardBadS:"곧게 섬, 평발 착지",
+    cardGentleT:"부드러운 펄스", cardGentleS:"작고 부드러운 사보이",
+    cardDeepT:"깊은 스쿼트", cardDeepS:"무겁고 뻣뻣한 충격",
+    cardCustomT:"직접 만들기", cardCustomS:"끌어서 최적화",
+    exGood:"좋은 — 엉덩이 힌지, 탄력 있는 발 (부하 분담)",
+    exBad:"나쁜 — 곧게 섬, 평발 (무릎 집중)",
+    exGentle:"부드러운 사보이 펄스 — 작고 부드럽게, 근육 부하",
+    exDeep:"깊은 스쿼트 바운스 — 무릎 집중, 뻣뻣한 충격",
+  }
+};
+function t(k){ return (TXT[LANG] && TXT[LANG][k] != null) ? TXT[LANG][k] : (TXT.en[k] != null ? TXT.en[k] : k); }
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  const lb=document.getElementById('langBtn'); if(lb) lb.textContent = t('langToggle');
+  const ab=document.getElementById('simpleToggle');
+  if(ab) ab.textContent = document.querySelector('.app').classList.contains('easy') ? t('adv') : t('easyBtn');
+  if(typeof rebuildLabels==='function') rebuildLabels();
+  if(typeof renderModes==='function') renderModes();
+  if(typeof renderCarousel==='function') renderCarousel();
+  if(typeof refreshEasyLabel==='function') refreshEasyLabel();
+  if(typeof recompute==='function'){ recompute(); renderCompare(); }
+}
+function toggleLang(){ LANG = LANG==='en' ? 'ko' : 'en'; localStorage.setItem('blab_lang', LANG); applyLang(); }
 
 // =========================================================================
 // 1. FORWARD KINEMATICS  — joint positions (metres, side view, +x = forward)
@@ -724,7 +992,7 @@ function evaluateBounce(cfg){
 }
 const capBW = v => v>=12 ? '≥12×' : v.toFixed(1)+'×';      // credible display ceiling
 function phaseLabel(p){
-  return (p<0.1||p>0.9) ? 'Top' : p<0.42 ? 'Descending' : p<0.58 ? 'Bottom' : 'Rising';
+  return (p<0.1||p>0.9) ? t('ph_top') : p<0.42 ? t('ph_desc') : p<0.58 ? t('ph_bottom') : t('ph_rising');
 }
 
 // =========================================================================
@@ -732,9 +1000,12 @@ function phaseLabel(p){
 // =========================================================================
 const JOINTS  = ['mtp','ankle','knee','hip','lumbar'];
 const MUSCLES = ['footflex','quad','ham','glute','calf','tibant','erector'];
-const MUSCLE_LABEL = { footflex:'Foot flexors / arch', quad:'Quadriceps', ham:'Hamstrings', glute:'Glutes',
-                       calf:'Calf (gastroc/soleus)', tibant:'Tibialis ant.', erector:'Erector spinae' };
-const JOINT_LABEL = { mtp:'Ball of foot (MTP)', ankle:'Ankle', knee:'Knee', hip:'Hip', lumbar:'L5/S1 (low back)' };
+let JOINT_LABEL = {}, MUSCLE_LABEL = {};
+function rebuildLabels(){
+  JOINTS.forEach(j=>{ JOINT_LABEL[j]=t('jl_'+j); });
+  MUSCLES.forEach(m=>{ MUSCLE_LABEL[m]=t('ml_'+m); });
+}
+rebuildLabels();
 const MUSCLE_JOINT = { footflex:'mtp', quad:'knee', ham:'hip', glute:'hip', calf:'ankle', tibant:'ankle', erector:'lumbar' };
 
 const MODES = {
@@ -943,7 +1214,7 @@ function updateReadout(sol, cycle, bal){
   const pj = document.getElementById('pkJoint');
   pj.textContent = capBW(pk.react[peakJoint]);
   pj.style.color = heat(Math.min(1, pk.react[peakJoint]/REF.reaction));
-  document.getElementById('pkJointName').innerHTML = JOINT_LABEL[peakJoint]+'<br>peak reaction';
+  document.getElementById('pkJointName').innerHTML = JOINT_LABEL[peakJoint]+'<br>'+t('peakReactionLbl');
 
   // joint-protection score, judged at the worst phase (the bottom) + balance penalty
   const score = computeScore(state, cycle, bal);
@@ -973,11 +1244,13 @@ function renderCycleInto(svgEl, cycle, curP, peakEl){
   g += poly(cycle.react[peakJoint], heat(Math.min(1,cycle.peak.react[peakJoint]/REF.reaction)), 2.4);
   g += poly(cycle.Lf, '#8b98a6', 1.5, 'stroke-dasharray="5 3"');
   g += `<line x1="${xs(curP).toFixed(1)}" y1="${padT}" x2="${xs(curP).toFixed(1)}" y2="${Hc-padB}" stroke="#58a6ff" stroke-width="1.5"/>`;
-  g += `<text x="${xs(1)-2}" y="${padT+6}" text-anchor="end" fill="#8b98a6" font-size="9">dashed = impact ×BW · solid = ${JOINT_LABEL[peakJoint]} ×BW</text>`;
+  const legend = LANG==='ko' ? `점선 = 충격 ×체중 · 실선 = ${JOINT_LABEL[peakJoint]} ×체중`
+                             : `dashed = impact ×BW · solid = ${JOINT_LABEL[peakJoint]} ×BW`;
+  g += `<text x="${xs(1)-2}" y="${padT+6}" text-anchor="end" fill="#8b98a6" font-size="9">${legend}</text>`;
   svgEl.innerHTML = g;
   if(peakEl) peakEl.textContent =
-    `peak ${JOINT_LABEL[peakJoint]} ${capBW(cycle.peak.react[peakJoint])} · impact ${cycle.peak.L.toFixed(2)}×`
-    + (cycle.airborneFrac>0.01 ? ` · ✈ ${Math.round(cycle.airborneFrac*100)}% airborne` : '');
+    t('cycPeakLbl').replace('{joint}',JOINT_LABEL[peakJoint]).replace('{val}',capBW(cycle.peak.react[peakJoint])).replace('{L}',cycle.peak.L.toFixed(2))
+    + (cycle.airborneFrac>0.01 ? t('airborne').replace('{pct}',Math.round(cycle.airborneFrac*100)) : '');
 }
 function renderCycle(cycle, curP){
   renderCycleInto(document.getElementById('cyc'), cycle, curP, document.getElementById('chartPeak'));
@@ -1000,13 +1273,16 @@ function renderBalance(bal, sol){
   g += `<line x1="${X(xlo).toFixed(1)}" y1="${ym-13}" x2="${X(xlo).toFixed(1)}" y2="${ym+13}" stroke="#d29922" stroke-width="1.3"/>`;
   g += `<line x1="${X(xhi).toFixed(1)}" y1="${ym-13}" x2="${X(xhi).toFixed(1)}" y2="${ym+13}" stroke="#d29922" stroke-width="1.3"/>`;
   g += `<circle cx="${X(p.comx).toFixed(1)}" cy="${ym}" r="5" fill="#e6edf3" stroke="#0d1117" stroke-width="1.5"/>`;
-  g += `<text x="${X(p.heel.x).toFixed(1)}" y="${ym+22}" fill="#8b98a6" font-size="9" text-anchor="middle">heel</text>`;
-  g += `<text x="${X(p.toe.x).toFixed(1)}" y="${ym+22}" fill="#8b98a6" font-size="9" text-anchor="middle">toe</text>`;
+  const heelL=LANG==='ko'?'뒤꿈치':'heel', toeL=LANG==='ko'?'앞꿈치':'toe';
+  g += `<text x="${X(p.heel.x).toFixed(1)}" y="${ym+22}" fill="#8b98a6" font-size="9" text-anchor="middle">${heelL}</text>`;
+  g += `<text x="${X(p.toe.x).toFixed(1)}" y="${ym+22}" fill="#8b98a6" font-size="9" text-anchor="middle">${toeL}</text>`;
   document.getElementById('balsvg').innerHTML = g;
-  const t=bal.tipping;
+  const tp=bal.tipping;
+  const dir = tp==='forward' ? t('tipForward') : t('tipBackward');
+  const edge = tp==='forward' ? t('edgeToes') : t('edgeHeel');
   document.getElementById('balText').innerHTML = ok
-    ? `<span style="color:var(--good)">Balanced</span> — the moving CoM (blue band; amber = motion-adjusted extremes) stays over the base of support (green) all bounce.`
-    : `<span style="color:var(--bad)">Tipping ${t}</span> — the CoM passes ${t==='forward'?'the toes':'the heel/ball'} during the bounce, so you would fall ${t}.`;
+    ? `<span style="color:var(--good)">${t('balOk')}</span>${t('balOkMsg')}`
+    : `<span style="color:var(--bad)">${t('balTip')} ${dir}</span>${t('balTipMsg').replace('{edge}',edge).replace('{dir}',dir)}`;
 }
 
 // step-pattern timeline: weight on this leg (blue) vs the other foot (grey) across the beats
@@ -1023,20 +1299,25 @@ function renderStep(curG){
   g+=`<polyline points="${op.join(' ')}" fill="none" stroke="#5b6675" stroke-width="1.4" stroke-dasharray="4 3"/>`;
   g+=`<polyline points="${tp.join(' ')}" fill="none" stroke="#58a6ff" stroke-width="2.4"/>`;
   if(curG!=null){ const cx=X(((curG%1)+1)%1).toFixed(1); g+=`<line x1="${cx}" y1="${padT}" x2="${cx}" y2="${Hm-padB}" stroke="#3fb950" stroke-width="1.6"/>`; }
-  g+=`<text x="${X(0)}" y="${Hm-4}" fill="#8b98a6" font-size="9">this leg (blue) · other foot (grey dashed)</text>`;
+  const legLbl = LANG==='ko' ? '이 다리(파랑) · 반대 발(회색 점선)' : 'this leg (blue) · other foot (grey dashed)';
+  g+=`<text x="${X(0)}" y="${Hm-4}" fill="#8b98a6" font-size="9">${legLbl}</text>`;
   document.getElementById('stepsvg').innerHTML=g;
-  document.getElementById('stepPeak').textContent = state.stepPattern==='even' ? 'bounce in place'
-    : state.stepPattern==='shift' ? 'L ↔ R weight shift · 2 beats' : 'triple-step (1 a 2) · 2 beats';
+  document.getElementById('stepPeak').textContent = state.stepPattern==='even' ? t('stepInPlace')
+    : state.stepPattern==='shift' ? t('stepShift') : t('stepTriple');
 }
 
 // A/B bounce comparison: summary + grouped bar chart (A vs B) for the selected metric
+function cfgLabel(cfg){ return cfg && cfg.labelKey ? t(cfg.labelKey) : (cfg && cfg.label) || ''; }
 function renderCompare(){
   const A=state.bounceA, B=state.bounceB;
   const sumEl=document.getElementById('cmpSummary'), chart=document.getElementById('cmpChart');
-  if(!A && !B){ sumEl.innerHTML='<span style="color:var(--muted)">Set up a bounce and click <b>Save as A</b>, then change it and click <b>Save as B</b> to compare the two.</span>'; chart.innerHTML=''; return; }
+  if(!A && !B){ sumEl.innerHTML='<span style="color:var(--muted)">'+t('cmpPlaceholder')+'</span>'; chart.innerHTML=''; return; }
   const evA=A&&evaluateBounce(A), evB=B&&evaluateBounce(B);
-  sumEl.innerHTML=[['A',A,evA,'#58a6ff'],['B',B,evB,'#e0822a']].filter(x=>x[1]).map(([k,cfg,ev,c])=>
-    `<span style="color:${c}">■</span> <b>${k}</b> — ${cfg.label}: impact <b>${ev.Lpk.toFixed(2)}×</b> · score <b>${ev.score}</b> · ${ev.bal.tipping==='ok'?'balanced':'<span style="color:var(--bad)">tipping '+ev.bal.tipping+'</span>'} <span class="optapply" data-load="${k}">load</span>`).join('<br>');
+  sumEl.innerHTML=[['A',A,evA,'#58a6ff'],['B',B,evB,'#e0822a']].filter(x=>x[1]).map(([k,cfg,ev,c])=>{
+    const tipTxt = ev.bal.tipping==='ok' ? t('cmpBalanced')
+      : '<span style="color:var(--bad)">'+t('cmpTip')+' '+(ev.bal.tipping==='forward'?t('tipForward'):t('tipBackward'))+'</span>';
+    return `<span style="color:${c}">■</span> <b>${k}</b> — ${cfgLabel(cfg)}: ${t('cmpImpact')} <b>${ev.Lpk.toFixed(2)}×</b> · ${t('cmpScore')} <b>${ev.score}</b> · ${tipTxt} <span class="optapply" data-load="${k}">${t('cmpLoad')}</span>`;
+  }).join('<br>');
   const metric=document.getElementById('cmpMetric').value;
   const isJoint = metric==='jr'||metric==='jm';
   const cats = isJoint ? JOINTS : MUSCLES;
@@ -1079,7 +1360,7 @@ function loadBounce(k){
     trunkLean:cfg.trunkLean, wpos:cfg.wpos, topPose:Object.assign({},cfg.topPose), pathCoord:cfg.pathCoord,
     bpm:cfg.bpm, softness:cfg.softness, weightFrac:cfg.weightFrac, footSpring:cfg.footSpring, stepPattern:cfg.stepPattern });
   syncAllControls();
-  document.getElementById('poseLabel').textContent=cfg.label+' (loaded '+k+')';
+  document.getElementById('poseLabel').textContent=t('plLoaded').replace('{label}',cfgLabel(cfg)).replace('{k}',k);
   recompute();
 }
 function syncAllControls(){
@@ -1092,41 +1373,37 @@ function syncAllControls(){
   document.querySelectorAll('#steps .mode').forEach(x=>x.classList.toggle('active', x.dataset.step===state.stepPattern));
   state.editEnd='bottom';
   document.querySelectorAll('#poseEnd .mode').forEach(x=>x.classList.toggle('active', x.dataset.end==='bottom'));
-  document.getElementById('editEndLabel').textContent='bottom';
+  document.getElementById('editEndLabel').textContent=t('endBottom');
   syncPostureSliders();
 }
 
 function flags(s, cycle, bal){
   const f=[], pk=cycle.peak, L=pk.L;
+  const tipDir = bal.tipping==='forward' ? t('tipForward') : t('tipBackward');
   // OVERLOAD channel (distinct from balance): raw CoM demand exceeds safe muscle capacity.
   const overloaded = JOINTS.filter(j=>pk.overload[j] > 1.0);
-  if(overloaded.length)
-    f.push(['bad','✖','Joint overload — demand exceeds capacity',`At the worst phase the ${overloaded.map(j=>JOINT_LABEL[j]).join(', ')} ${overloaded.length>1?'demand':'demands'} more moment than the muscles can safely produce (~2–3 N·m/kg). This posture can't be held statically — it forces a fall, a violent catch, or tissue strain${bal.tipping!=='ok'?' (and you are tipping '+bal.tipping+')':''}.`]);
-  if(L>3.6) f.push(['bad','⚠','Hard landing — impact spike',`The bottom reversal hits ${L.toFixed(1)}× bodyweight — drop-landing territory, and a bounce repeats it every beat. Soften the knees and make the bounce smaller/slower.`]);
-  else if(L>2.6) f.push(['warn','▲','Snappy reversal',`Bottom impact ${L.toFixed(1)}×BW. A softer, more absorbed sink spreads the impulse over more time and lowers the peak.`]);
-  const jflag=(j,title,msgBad,msgWarn)=>{ const v=pk.react[j];
-    if(v>6) f.push(['bad','⚠',title,msgBad]); else if(v>4) f.push(['warn','▲',title,msgWarn]); };
-  jflag('knee','High knee load at the bottom',
-    'Knee reaction is in overload — deep flexion + knees-forward + the impact spike compound on the patellofemoral/tibiofemoral joint. Stay shallower, knees tracking the toes.',
-    'Knee load is elevated — ease depth or keep the knees from driving past the toes.');
-  jflag('lumbar','High lower-back load',
-    'L5/S1 compression is in overload — forward lean cantilevers the spine the whole cycle. Stack the torso and hinge from the hip with a neutral spine.',
-    'Lower-back load is elevated — bring the torso more upright.');
-  jflag('ankle','High Achilles / ankle load',
-    'Achilles/ankle load is in overload — deep, ballistic, on the balls of the feet. Let the heel kiss the floor and soften the dip.',
-    'Achilles/ankle load is elevated — let the heel settle and soften the bottom.');
-  jflag('mtp','High forefoot / ball-of-foot load',
-    'Ball-of-foot load is in overload — a deep, ballistic, heels-up bounce hammers the forefoot, MTP joint and plantar fascia. Soften the dip and let the heel settle between bounces.',
-    'Forefoot load is elevated — let the heel kiss the floor between bounces.');
+  if(overloaded.length){
+    const tip = bal.tipping!=='ok' ? t('flOverTip').replace('{dir}',tipDir) : '';
+    f.push(['bad','✖', t('flOverT'),
+      t('flOverB').replace('{j}', overloaded.map(j=>JOINT_LABEL[j]).join(', ')).replace('{tip}', tip)]);
+  }
+  if(L>3.6) f.push(['bad','⚠', t('flImpactHardT'), t('flImpactHardB').replace('{L}',L.toFixed(1))]);
+  else if(L>2.6) f.push(['warn','▲', t('flImpactSnapT'), t('flImpactSnapB').replace('{L}',L.toFixed(1))]);
+  const jflag=(j,tk,bk,wk)=>{ const v=pk.react[j];
+    if(v>6) f.push(['bad','⚠',t(tk),t(bk)]); else if(v>4) f.push(['warn','▲',t(tk),t(wk)]); };
+  jflag('knee','flKneeT','flKneeBad','flKneeWarn');
+  jflag('lumbar','flLumbarT','flLumbarBad','flLumbarWarn');
+  jflag('ankle','flAnkleT','flAnkleBad','flAnkleWarn');
+  jflag('mtp','flMtpT','flMtpBad','flMtpWarn');
   if(s.weightFrac>0.85 && (pk.react.knee>4||pk.react.hip>4))
-    f.push(['warn','◇','Single-leg overload','Almost all weight lands on one leg — per-leg load roughly doubles (the hip ~2.5–3×) and multiplies with the impact spike. If single-leg is unavoidable, make that leg the softest.']);
-  if(bal.tipping==='forward') f.push(['bad','◇','Tipping forward','The moving centre of mass passes the toes during the bounce — you would fall forward. Sit into the hips, ease the trunk lean, or keep the heel down for a longer base.']);
-  else if(bal.tipping==='backward') f.push(['bad','◇','Tipping backward','The CoM passes behind the base — you would fall backward. Bring the weight forward over the foot; don\'t ride the heels while sitting deep.']);
-  else if(bal.narrow) f.push(['warn','◇','Narrow balance margin','The CoM rides close to the edge of the base of support — little room before tipping (common up on the ball, where the forefoot base is small).']);
+    f.push(['warn','◇', t('flSingleT'), t('flSingleB')]);
+  if(bal.tipping==='forward') f.push(['bad','◇', t('flTipFT'), t('flTipFB')]);
+  else if(bal.tipping==='backward') f.push(['bad','◇', t('flTipBT'), t('flTipBB')]);
+  else if(bal.narrow) f.push(['warn','◇', t('flNarrowT'), t('flNarrowB')]);
   const fa = footAbsorption(s);
   if(fa>0.5 && pk.react.knee<6 && pk.react.lumbar<6)
-    f.push(['good','✓','Foot absorbing the bounce',`The bendy forefoot, arch and toe/intrinsic flexors are soaking up the impact (~${Math.round(fa*100)}% foot spring), sparing the knees and hips.`]);
-  if(f.length===0) f.push(['good','✓','Well-distributed','Low impact, shared across the muscles, joints kept moderate through every phase. A protective bounce.']);
+    f.push(['good','✓', t('flFootT'), t('flFootB').replace('{pct}',Math.round(fa*100))]);
+  if(f.length===0) f.push(['good','✓', t('flGoodT'), t('flGoodB')]);
   document.getElementById('flags').innerHTML = f.map(x=>
     `<div class="flag ${x[0]}"><span class="ic">${x[1]}</span><span><b>${x[2]}</b><br><span style="color:var(--muted)">${x[3]}</span></span></div>`
   ).join('');
@@ -1136,9 +1413,8 @@ function flags(s, cycle, bal){
 // 8. UI WIRING
 // =========================================================================
 function setView(){
-  const m = MODES[state.mode];
-  document.getElementById('viewTitle').textContent = m.title;
-  document.getElementById('viewUnit').textContent = m.unit;
+  document.getElementById('viewTitle').textContent = t('vt_'+state.mode);
+  document.getElementById('viewUnit').textContent = t('vu_'+state.mode);
 }
 
 function recompute(){
@@ -1179,7 +1455,7 @@ sliders.forEach(([id,key,conv,fmt])=>{
     if(POSTURE_KEYS[key] && state.editEnd==='top') state.topPose[key]=val;
     else state[key]=val;
     document.getElementById(valIds[id]).textContent=fmt(raw);
-    if(!noReset[id]) document.getElementById('poseLabel').textContent='Custom bounce';
+    if(!noReset[id]) document.getElementById('poseLabel').textContent=t('plCustom');
     if(id==='phase' && state.playing) togglePlay(false);   // scrubbing pauses playback
     recompute();
   });
@@ -1191,23 +1467,26 @@ function syncPostureSliders(){
       document.getElementById(id).value=r; document.getElementById(vid).textContent=r+'%'; });
 }
 
-// modes
+// modes — rebuilt on language change
 const modeDefs = [
-  ['reaction','Joint reaction','force on joints'],
-  ['energy','Muscle energy','eccentric work'],
-  ['moment','Joint moment','torque demand'],
-  ['load','Overall load %','single heatmap'],
+  ['reaction','mReaction','mReactionSub'],
+  ['energy','mEnergy','mEnergySub'],
+  ['moment','mMoment','mMomentSub'],
+  ['load','mLoad','mLoadSub'],
 ];
 const modesEl=document.getElementById('modes');
-modesEl.innerHTML = modeDefs.map(([k,t,s])=>
-  `<div class="mode${k===state.mode?' active':''}" data-mode="${k}"><b>${t}</b>${s}</div>`).join('');
-modesEl.querySelectorAll('.mode').forEach(el=>{
-  el.addEventListener('click',()=>{
-    state.mode=el.dataset.mode;
-    modesEl.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x===el));
-    recompute();
+function renderModes(){
+  modesEl.innerHTML = modeDefs.map(([k,tk,sk])=>
+    `<div class="mode${k===state.mode?' active':''}" data-mode="${k}"><b>${t(tk)}</b>${t(sk)}</div>`).join('');
+  modesEl.querySelectorAll('.mode').forEach(el=>{
+    el.addEventListener('click',()=>{
+      state.mode=el.dataset.mode;
+      modesEl.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x===el));
+      recompute();
+    });
   });
-});
+}
+renderModes();
 
 // step-pattern buttons
 const stepsEl=document.getElementById('steps');
@@ -1215,7 +1494,7 @@ stepsEl.querySelectorAll('.mode').forEach(el=>{
   el.addEventListener('click',()=>{
     state.stepPattern=el.dataset.step;
     stepsEl.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x===el));
-    document.getElementById('poseLabel').textContent='Custom bounce';
+    document.getElementById('poseLabel').textContent=t('plCustom');
     recompute();
   });
 });
@@ -1226,7 +1505,7 @@ poseEndEl.querySelectorAll('.mode').forEach(el=>{
   el.addEventListener('click',()=>{
     state.editEnd=el.dataset.end;
     poseEndEl.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x===el));
-    document.getElementById('editEndLabel').textContent=state.editEnd;
+    document.getElementById('editEndLabel').textContent=t(state.editEnd==='top'?'endTop':'endBottom');
     syncPostureSliders();
     state.phase = state.editEnd==='top' ? 0.0 : 0.5;     // jump the view to the edited end
     document.getElementById('phase').value=Math.round(state.phase*100);
@@ -1267,7 +1546,7 @@ function applyPreset(p){
   state.topPose = { depth: Math.min(0.06, p.depth*0.2), kneeForward: p.kneeForward*0.6, trunkLean: p.trunkLean*0.5, wpos: p.wpos };
   state.editEnd='bottom'; state.pathCoord=0;
   document.querySelectorAll('#poseEnd .mode').forEach(x=>x.classList.toggle('active', x.dataset.end==='bottom'));
-  document.getElementById('editEndLabel').textContent='bottom';
+  document.getElementById('editEndLabel').textContent=t('endBottom');
   document.getElementById('poseLabel').textContent=p.name;
   recompute();
 }
@@ -1284,7 +1563,8 @@ const playBtn=document.getElementById('play');
 function togglePlay(on){
   state.playing = (on===undefined) ? !state.playing : on;
   playBtn.classList.toggle('on', state.playing);
-  playBtn.textContent = state.playing ? '❚❚ Pause' : '▶ Animate bounce';
+  playBtn.textContent = state.playing ? t('pause') : t('animate');
+  const ep=document.getElementById('easyPlay'); if(ep) ep.textContent = state.playing ? t('pause') : t('animateShort');
   if(state.playing){ t0=null; raf=requestAnimationFrame(tick); }
   else if(raf){ cancelAnimationFrame(raf); raf=null; }
 }
@@ -1294,21 +1574,21 @@ playBtn.addEventListener('click', ()=>togglePlay());
 function runOptimizer(targetId){
   const r=optimizePaths(state);
   const card=(name,desc,o)=>`<div class="optcard">
-    <div><b>${name}</b><span class="optapply" data-c="${o.coord}" data-s="${o.soft}">apply</span></div>
-    <div class="opthint">${desc} — ${o.coord<0?'hip-led':o.coord>0?'knee-led':'synchronised'}, ${Math.round(o.soft*100)}% soft</div>
-    <div class="optmetrics">peak ${capBW(o.peak)} · total ${Math.round(o.cum)} · ${o.tipping?'<span style="color:var(--bad)">off-balance</span>':'<span style="color:var(--good)">balanced</span>'}</div>
+    <div><b>${name}</b><span class="optapply" data-c="${o.coord}" data-s="${o.soft}">${t('optApply')}</span></div>
+    <div class="opthint">${desc} — ${o.coord<0?t('optHipLed'):o.coord>0?t('optKneeLed'):t('optSync')}, ${Math.round(o.soft*100)}% ${t('optSoft')}</div>
+    <div class="optmetrics">${t('optPeak')} ${capBW(o.peak)} · ${t('optTotal')} ${Math.round(o.cum)} · ${o.tipping?'<span style="color:var(--bad)">'+t('optOffBal')+'</span>':'<span style="color:var(--good)">'+t('optBal')+'</span>'}</div>
   </div>`;
   const el=document.getElementById(targetId);
   el.innerHTML =
-    card('Lowest peak load','min worst-moment',r.minPeak)
-   +card('Lowest cumulative','min total load',r.minCum)
-   +card('Smoothest','flattest load profile',r.smooth)
-   +card('Most balanced','CoM kept safest over the base',r.balanced);
+    card(t('optLowPeak'),t('optLowPeakD'),r.minPeak)
+   +card(t('optLowCum'),t('optLowCumD'),r.minCum)
+   +card(t('optSmooth'),t('optSmoothD'),r.smooth)
+   +card(t('optBalanced'),t('optBalancedD'),r.balanced);
   el.querySelectorAll('.optapply').forEach(a=>a.addEventListener('click',()=>{
     state.pathCoord=+a.dataset.c; state.softness=+a.dataset.s;
     document.getElementById('softness').value=Math.round(state.softness*100);
     document.getElementById('v_soft').textContent=Math.round(state.softness*100)+'%';
-    document.getElementById('poseLabel').textContent='Optimised path';
+    document.getElementById('poseLabel').textContent=t('plOpt');
     recompute();
   }));
 }
@@ -1358,7 +1638,7 @@ function applyJointDrag(joint, mx, my){
     pose.trunkLean = cl(ang / MAXTRUNK);
   }
   syncPostureSliders();
-  document.getElementById('poseLabel').textContent='Dragged '+state.editEnd+' pose';
+  document.getElementById('poseLabel').textContent=t('plDragged').replace('{end}', t(state.editEnd==='top'?'endTop':'endBottom'));
   recompute();
 }
 
@@ -1371,47 +1651,84 @@ document.getElementById('cmpMetric').addEventListener('change', renderCompare);
 // Good and Bad share the same top & bottom CoM height (same vertical travel) and a slow
 // tempo, so the only difference is technique: hip-hinge + springy foot vs upright + flat foot.
 const EZ_TOP = { depth:0.05, kneeForward:0.12, trunkLean:0.10, wpos:0.55 };
-const EX_GOOD = { mass:72, height:1.75, depth:0.30, kneeForward:0.34, trunkLean:0.30, wpos:0.62,
+const EX_GOOD = { id:'good', mass:72, height:1.75, depth:0.30, kneeForward:0.34, trunkLean:0.30, wpos:0.62,
   topPose:Object.assign({},EZ_TOP), pathCoord:-0.4, bpm:110, softness:0.85, weightFrac:0.55, footSpring:0.85, stepPattern:'even',
-  label:'Good — hip hinge, springy foot (load shared)' };
-const EX_BAD = { mass:72, height:1.75, depth:0.38, kneeForward:0.58, trunkLean:0.05, wpos:0.50,
+  labelKey:'exGood' };
+const EX_BAD = { id:'bad', mass:72, height:1.75, depth:0.38, kneeForward:0.58, trunkLean:0.05, wpos:0.50,
   topPose:Object.assign({},EZ_TOP), pathCoord:0.4, bpm:110, softness:0.30, weightFrac:0.55, footSpring:0.20, stepPattern:'even',
-  label:'Bad — upright, flat foot (knee-loaded)' };
+  labelKey:'exBad' };
+const EX_GENTLE = { id:'gentle', mass:72, height:1.75, depth:0.16, kneeForward:0.28, trunkLean:0.18, wpos:0.60,
+  topPose:Object.assign({},EZ_TOP), pathCoord:-0.2, bpm:120, softness:0.92, weightFrac:0.55, footSpring:0.85, stepPattern:'even',
+  labelKey:'exGentle' };
+const EX_DEEP = { id:'deep', mass:72, height:1.75, depth:0.70, kneeForward:0.78, trunkLean:0.34, wpos:0.50,
+  topPose:Object.assign({},EZ_TOP), pathCoord:0.4, bpm:130, softness:0.30, weightFrac:0.62, footSpring:0.22, stepPattern:'even',
+  labelKey:'exDeep' };
+// the swipeable carousel: Good-vs-Bad comparison, single curated examples, then Custom
+const EXAMPLES = [
+  { id:'ref',    view:'ref',    titleKey:'cardRefT',    subKey:'cardRefS' },
+  { id:'good',   view:'one', cfg:EX_GOOD,   titleKey:'cardGoodT',   subKey:'cardGoodS' },
+  { id:'bad',    view:'one', cfg:EX_BAD,    titleKey:'cardBadT',    subKey:'cardBadS' },
+  { id:'gentle', view:'one', cfg:EX_GENTLE, titleKey:'cardGentleT', subKey:'cardGentleS' },
+  { id:'deep',   view:'one', cfg:EX_DEEP,   titleKey:'cardDeepT',   subKey:'cardDeepS' },
+  { id:'custom', view:'custom', titleKey:'cardCustomT', subKey:'cardCustomS' },
+];
+let easyView='ref', easyExId='ref';
 function applyConfig(cfg){
   Object.assign(state, { mass:cfg.mass, height:cfg.height, depth:cfg.depth, kneeForward:cfg.kneeForward,
     trunkLean:cfg.trunkLean, wpos:cfg.wpos, topPose:Object.assign({},cfg.topPose), pathCoord:cfg.pathCoord,
     bpm:cfg.bpm, softness:cfg.softness, weightFrac:cfg.weightFrac, footSpring:cfg.footSpring, stepPattern:cfg.stepPattern });
-  syncAllControls(); document.getElementById('poseLabel').textContent=cfg.label||'Bounce'; recompute();
+  syncAllControls(); document.getElementById('poseLabel').textContent=cfgLabel(cfg)||t('plYour'); recompute();
 }
-function setEasyView(view){
+function refreshEasyLabel(){
+  const app=document.querySelector('.app');
+  if(!app.classList.contains('easy')) return;
+  const pl=document.getElementById('poseLabel');
+  if(easyView==='ref') pl.textContent=cfgLabel(EX_GOOD);
+  else if(easyView==='one'){ const e=EXAMPLES.find(x=>x.id===easyExId); if(e&&e.cfg) pl.textContent=cfgLabel(e.cfg); }
+  else if(easyView==='custom') pl.textContent=t('plYour');
+}
+function renderCarousel(){
+  const host=document.getElementById('easySel'); if(!host) return;
+  host.innerHTML = EXAMPLES.map((e,i)=>
+    `<div class="mode${e.id===easyExId?' active':''}" data-ex="${i}"><b>${t(e.titleKey)}</b><span>${t(e.subKey)}</span></div>`).join('');
+  host.querySelectorAll('.mode').forEach(el=>el.addEventListener('click',()=>{
+    const e=EXAMPLES[+el.dataset.ex]; setEasyView(e.view, e.id, e.cfg);
+  }));
+}
+function setEasyView(view, exId, cfg){
+  easyView=view; easyExId=exId||view;
   const app=document.querySelector('.app');
   app.classList.toggle('view-ref', view==='ref');
+  app.classList.toggle('view-one', view==='one');
   app.classList.toggle('view-custom', view==='custom');
-  document.querySelectorAll('#easySel .mode').forEach(x=>x.classList.toggle('active', x.dataset.view===view));
+  renderCarousel();
   if(view==='ref'){
     state.bounceA=EX_GOOD; state.bounceB=EX_BAD;
     applyConfig(EX_GOOD); renderCompare();
     if(!state.playing) togglePlay(true);
+  } else if(view==='one'){
+    applyConfig(cfg);
+    if(!state.playing) togglePlay(true);
   } else {
     if(state.playing) togglePlay(false);
-    document.getElementById('easyPlay').textContent='▶ Animate';
-    document.getElementById('poseLabel').textContent='Your bounce';
+    document.getElementById('poseLabel').textContent=t('plYour');
   }
 }
-document.querySelectorAll('#easySel .mode').forEach(el=>el.addEventListener('click',()=>setEasyView(el.dataset.view)));
 document.getElementById('easyOpt').addEventListener('click',()=>runOptimizer('easyOptResults'));
-document.getElementById('easyPlay').addEventListener('click',()=>{ togglePlay(); document.getElementById('easyPlay').textContent = state.playing ? '❚❚ Pause' : '▶ Animate'; });
+document.getElementById('easyPlay').addEventListener('click',()=>togglePlay());
 
 // advanced toggle: switch between Easy mode and the full controls
 document.getElementById('simpleToggle').addEventListener('click',()=>{
   const app=document.querySelector('.app'); const easy=app.classList.toggle('easy');
-  document.getElementById('simpleToggle').textContent = easy ? '⚙ Advanced controls' : '◐ Easy mode';
+  document.getElementById('simpleToggle').textContent = easy ? t('adv') : t('easyBtn');
   if(easy){ setEasyView('ref'); } else if(state.playing){ togglePlay(false); }
 });
 
-// boot — default to Easy mode showing the Good vs Bad comparison, auto-animating
-recompute();
-renderCompare();
+// language toggle
+document.getElementById('langBtn').addEventListener('click', toggleLang);
+
+// boot — apply language, then default to Easy mode showing Good vs Bad, auto-animating
+applyLang();
 setEasyView('ref');
 </script>
 </body>
