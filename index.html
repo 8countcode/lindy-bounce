@@ -109,6 +109,15 @@
   .cmpcol .cmpcyc{margin-top:6px; background:var(--panel2) !important}
   .topbar{display:flex; justify-content:space-between; align-items:center; gap:8px}
   #langBtn{flex:0 0 auto; white-space:nowrap}
+  /* help modal */
+  .modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.62); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px}
+  .modal{background:var(--panel); border:1px solid var(--line); border-radius:12px; max-width:560px; width:100%; max-height:85vh; overflow:auto; padding:16px 20px 20px}
+  .modal-h{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; position:sticky; top:0; background:var(--panel)}
+  .modal-h strong{font-size:15px}
+  .modal-body{font-size:13px; line-height:1.55; color:var(--txt)}
+  .modal-body ol{padding-left:20px; margin:6px 0}
+  .modal-body li{margin:9px 0}
+  .modal-body b{color:var(--accent); font-weight:600}
   /* swipeable example carousel */
   .carousel{display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px;
             scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch}
@@ -150,7 +159,10 @@
   <div class="col left">
     <div class="topbar">
       <h1>Bounce Load Lab <span class="pill">v5</span></h1>
-      <button class="cbtn" id="langBtn">🌐 한국어</button>
+      <div style="display:flex; gap:6px; flex:0 0 auto">
+        <button class="cbtn" id="helpBtn" aria-label="Help" title="Help" style="font-weight:700">?</button>
+        <button class="cbtn" id="langBtn">🌐 한국어</button>
+      </div>
     </div>
     <p class="sub" data-i18n="sub">See where a lindy-hop bounce sends its load — and how a good hip-hinge bounce spares the knees and ankles versus a stiff, upright one.</p>
     <button class="cbtn" id="simpleToggle" style="margin-bottom:8px">⚙ Advanced controls</button>
@@ -370,6 +382,14 @@
   </div>
 </div>
 
+<!-- ============ HELP MODAL ============ -->
+<div class="modal-bg" id="helpModal" style="display:none">
+  <div class="modal">
+    <div class="modal-h"><strong id="helpTitle"></strong><button class="cbtn" id="helpClose" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="helpBody"></div>
+  </div>
+</div>
+
 <script>
 "use strict";
 /* =========================================================================
@@ -456,6 +476,9 @@ const TXT = {
     langName:"한국어", langToggle:"🌐 한국어", low:"low", high:"high",
     lgCoM:"centre of mass", lgGRF:"ground reaction", lgBase:"base of support", airborneTxt:"✈ airborne",
     optimizeBody:"⚙ Optimize examples to new body", optimizing:"⏳ Optimizing…",
+    help:"Help", helpEasyTitle:"How to use — Easy mode", helpAdvTitle:"How to use — Advanced controls",
+    helpEasyBody:"<ol><li><b>Pick an example</b> from the cards at the top — swipe them: <b>Good vs Bad</b>, single examples (Good, Bad, Gentle pulse, Deep squat), or <b>Custom</b>.</li><li><b>Good vs Bad</b> plays the two techniques side by side. Colours show load — blue = low, red = high — on the joints (circles) and muscles (bands).</li><li>Use the <b>▶ / ❚❚</b> button to play or pause the bounce.</li><li><b>Custom</b>: drag the <b>knee, hip and head</b> to shape your own pose. Switch <b>Top / Bottom</b> on the left to edit the start vs the deepest point, then <b>Find optimal path</b> for the smoothest route between them.</li><li><b>Resize the body</b>: drag the small blue handle alongside any segment (torso, thigh, shank, foot). Then press <b>Optimize examples to new body</b> to re-derive the examples for your proportions.</li><li>The <b>legend</b> in the figure marks the centre of mass (CoM), the ground reaction (GRF) and the base of support.</li><li><b>🌐</b> switches Korean / English. <b>Advanced controls</b> reveals the full sliders, the readout panel and A/B comparison.</li></ol>",
+    helpAdvBody:"<ol><li><b>Body &amp; pose sliders</b> set mass, height, bounce depth, knees-forward, trunk lean and forefoot weighting.</li><li><b>Top / Bottom</b> toggle edits the start vs the deepest pose — the bounce travels between them. Drag the <b>knee, hip, head</b> in the figure, or the blue handles to change <b>segment lengths</b>.</li><li><b>Dynamics &amp; stance</b>: tempo, landing softness, foot absorption, weight on this leg, and the step pattern (in place / L↔R / triple-step).</li><li><b>▶ Animate</b> plays the cycle; the <b>Bounce phase</b> slider scrubs it.</li><li><b>Find optimal paths</b> searches the best movement between your top &amp; bottom poses (lowest peak load / smoothest / most balanced).</li><li><b>Readout panel</b> (right): peak loads, fore–aft balance, a joint-protection score, warning flags, and per-joint / per-muscle tables. Switch the heatmap metric at the top (reaction / energy / moment / load).</li><li><b>Compare two bounces</b>: press <b>Save as A</b>, change the settings, then <b>Save as B</b> to see them side by side with per-joint bars.</li><li><b>Easy mode</b> returns to the simple beginner view.</li></ol>",
     chooseExample:"Choose an example bounce — swipe the cards, then watch it animate.",
     depthHint:"Knee flexion at the lowest point. A lindy pulse is shallow (~10–30%); a deep squat is 80–100%. Bigger drop → bigger impact.",
     kneeHint:"Shin lean / knees-past-toes. Drives knee (patellofemoral) load.",
@@ -571,6 +594,9 @@ const TXT = {
     langName:"English", langToggle:"🌐 English", low:"낮음", high:"높음",
     lgCoM:"무게중심", lgGRF:"지면반력", lgBase:"지지면", airborneTxt:"✈ 공중",
     optimizeBody:"⚙ 새 체형에 맞게 예시 최적화", optimizing:"⏳ 최적화 중…",
+    help:"도움말", helpEasyTitle:"사용법 — 쉬운 모드", helpAdvTitle:"사용법 — 고급 설정",
+    helpEasyBody:"<ol><li>위쪽 카드에서 <b>예시를 고르세요</b> — 넘기면서: <b>좋은 vs 나쁜</b>, 단일 예시(좋은, 나쁜, 부드러운 펄스, 깊은 스쿼트), 또는 <b>직접 만들기</b>.</li><li><b>좋은 vs 나쁜</b>은 두 기술을 나란히 재생합니다. 색은 부하를 나타냅니다 — 파랑 = 낮음, 빨강 = 높음 — 관절(원)과 근육(띠)에서.</li><li><b>▶ / ❚❚</b> 버튼으로 바운스를 재생하거나 멈추세요.</li><li><b>직접 만들기</b>: <b>무릎·고관절·머리</b>를 끌어 자세를 만드세요. 왼쪽에서 <b>위 / 아래</b>를 전환해 시작과 가장 깊은 지점을 편집한 뒤, <b>최적 경로 찾기</b>로 둘 사이 가장 매끄러운 경로를 보세요.</li><li><b>체형 바꾸기</b>: 각 부위(상체·허벅지·정강이·발) 옆의 작은 파란 핸들을 끌어 길이를 바꾸세요. 그런 다음 <b>새 체형에 맞게 예시 최적화</b>를 눌러 체형에 맞는 예시를 다시 만드세요.</li><li>그림의 <b>범례</b>는 무게중심(CoM), 지면반력(GRF), 지지면을 표시합니다.</li><li><b>🌐</b>는 한국어 / 영어를 전환합니다. <b>고급 설정</b>은 모든 슬라이더, 판독 패널, A/B 비교를 보여줍니다.</li></ol>",
+    helpAdvBody:"<ol><li><b>신체 &amp; 자세 슬라이더</b>로 체중, 키, 바운스 깊이, 무릎 전방, 상체 기울기, 발 앞쪽 체중을 설정합니다.</li><li><b>위 / 아래</b> 전환으로 시작 자세와 가장 깊은 자세를 편집합니다 — 바운스는 둘 사이를 오갑니다. 그림에서 <b>무릎·고관절·머리</b>를, 또는 파란 핸들로 <b>부위 길이</b>를 끌어 바꾸세요.</li><li><b>동역학 &amp; 스탠스</b>: 템포, 착지 부드러움, 발 흡수, 이 다리의 체중, 스텝 패턴(제자리 / 좌↔우 / 트리플 스텝).</li><li><b>▶ 재생</b>은 사이클을 재생하고, <b>바운스 단계</b> 슬라이더로 스크럽합니다.</li><li><b>최적 경로 찾기</b>는 위·아래 자세 사이 최적의 움직임을 검색합니다(최저 피크 / 가장 매끄러움 / 가장 균형적).</li><li><b>판독 패널</b>(오른쪽): 최대 부하, 앞–뒤 균형, 관절 보호 점수, 경고, 관절별/근육별 표. 위에서 히트맵 지표를 전환하세요(반력 / 에너지 / 모멘트 / 부하).</li><li><b>두 바운스 비교</b>: <b>A로 저장</b>을 누르고 설정을 바꾼 뒤 <b>B로 저장</b>을 누르면 관절별 막대로 나란히 비교합니다.</li><li><b>쉬운 모드</b>는 간단한 초보자 화면으로 돌아갑니다.</li></ol>",
     chooseExample:"예시 바운스를 골라보세요 — 카드를 넘긴 뒤 움직임을 확인하세요.",
     depthHint:"가장 낮은 지점에서의 무릎 굽힘. 린디 펄스는 얕고(~10–30%), 깊은 스쿼트는 80–100%. 더 깊이 내려갈수록 → 충격도 커집니다.",
     kneeHint:"정강이 기울기 / 무릎이 발끝을 넘는 정도. 무릎(슬개대퇴) 부하를 좌우합니다.",
@@ -675,6 +701,9 @@ function applyLang(){
   const pls=state.playing;
   ['easyPlay','easyPlayMain'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent = pls ? t('pause') : t('animateShort'); });
   const pb=document.getElementById('play'); if(pb) pb.textContent = pls ? t('pause') : t('animate');
+  const hb=document.getElementById('helpBtn'); if(hb) hb.title=t('help');
+  const hm=document.getElementById('helpModal');
+  if(hm && hm.style.display!=='none' && typeof openHelp==='function') openHelp();   // re-render open guide in new language
   if(typeof recompute==='function'){ recompute(); renderCompare(); }
 }
 function toggleLang(){ LANG = LANG==='en' ? 'ko' : 'en'; localStorage.setItem('blab_lang', LANG); applyLang(); }
@@ -1859,6 +1888,19 @@ document.getElementById('simpleToggle').addEventListener('click',()=>{
 
 // language toggle
 document.getElementById('langBtn').addEventListener('click', toggleLang);
+
+// help modal — its content depends on whether you're in Easy or Advanced mode
+function openHelp(){
+  const easy=document.querySelector('.app').classList.contains('easy');
+  document.getElementById('helpTitle').textContent = easy ? t('helpEasyTitle') : t('helpAdvTitle');
+  document.getElementById('helpBody').innerHTML = easy ? t('helpEasyBody') : t('helpAdvBody');
+  document.getElementById('helpModal').style.display='flex';
+}
+function closeHelp(){ document.getElementById('helpModal').style.display='none'; }
+document.getElementById('helpBtn').addEventListener('click', openHelp);
+document.getElementById('helpClose').addEventListener('click', closeHelp);
+document.getElementById('helpModal').addEventListener('click', e=>{ if(e.target.id==='helpModal') closeHelp(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeHelp(); });
 
 // boot — apply language, then default to Easy mode showing Good vs Bad, auto-animating
 applyLang();
