@@ -116,6 +116,8 @@
   .carousel::-webkit-scrollbar-thumb{background:var(--line); border-radius:6px}
   .carousel .mode{min-width:118px; flex:0 0 auto; scroll-snap-align:start}
   .carousel .mode span{display:block; font-size:11px; color:var(--muted)}
+  .carousel .mode.disabled{opacity:.4; cursor:not-allowed}
+  .seghandle:hover{fill:#1b2a3f}
   /* easy-mode visibility */
   .app:not(.easy) .easybar{display:none}
   .app.easy .adv{display:none}
@@ -153,6 +155,7 @@
     <button class="cbtn" id="simpleToggle" style="margin-bottom:8px">⚙ Advanced controls</button>
     <div class="easybar carouselhint" data-i18n="chooseExample" style="font-size:11.5px;color:var(--muted);margin:2px 0 6px">Choose an example bounce — swipe the cards, then watch it animate.</div>
     <div class="easybar carousel" id="easySel"></div>
+    <button class="cbtn easybar" id="optimizeBody" data-i18n="optimizeBody" style="display:none; margin-bottom:10px; border-color:var(--accent); color:var(--accent)">⚙ Optimize examples to new body</button>
 
     <div class="adv">
     <h2 data-i18n="body">Body</h2>
@@ -417,6 +420,7 @@ const state = {
   topPose: { depth: 0.03, kneeForward: 0.16, trunkLean: 0.08, wpos: 0.55 },     // TOP-of-bounce pose
   editEnd: 'bottom', pathCoord: 0,                                              // which end the sliders edit; path coordination
   bpm: 160, softness: 0.60, weightFrac: 0.55, footSpring: 0.50, stepPattern: 'even', phase: 0.50,
+  seg: { trunk: 1, thigh: 1, shank: 1, foot: 1 },   // per-segment length multipliers (draggable)
   mode: 'reaction', playing: false,
 };
 
@@ -448,6 +452,8 @@ const TXT = {
     tipForward:"forward", tipBackward:"backward", impact:"impact", score:"score",
     balOk:"Balanced", balTip:"Tipping",
     langName:"한국어", langToggle:"🌐 한국어", low:"low", high:"high",
+    lgCoM:"centre of mass", lgGRF:"ground reaction", lgBase:"base of support", airborneTxt:"✈ airborne",
+    optimizeBody:"⚙ Optimize examples to new body", optimizing:"⏳ Optimizing…",
     chooseExample:"Choose an example bounce — swipe the cards, then watch it animate.",
     depthHint:"Knee flexion at the lowest point. A lindy pulse is shallow (~10–30%); a deep squat is 80–100%. Bigger drop → bigger impact.",
     kneeHint:"Shin lean / knees-past-toes. Drives knee (patellofemoral) load.",
@@ -537,12 +543,12 @@ const TXT = {
     exDeep:"Deep squat-bounce — knee-loaded, stiff slam",
   },
   ko: {
-    sub:"린디합 바운스가 부하를 어디로 보내는지 — 그리고 엉덩이를 접는 좋은 바운스가 뻣뻣하게 선 바운스보다 무릎과 발목을 어떻게 보호하는지 보여줍니다.",
+    sub:"린디합 바운스가 부하를 어디로 보내는지 — 그리고 고관절을 접는 좋은 바운스가 뻣뻣하게 선 바운스보다 무릎과 발목을 어떻게 보호하는지 보여줍니다.",
     adv:"⚙ 고급 설정", easyBtn:"◐ 쉬운 모드",
     evGood:"좋은 vs 나쁜", evGoodSub:"보고 비교하기", evCustom:"직접 만들기", evCustomSub:"끌어서 최적화",
     body:"신체", bodyMass:"체중", height:"키",
     bouncePose:"바운스 자세", top:"위", topSub:"바운스 시작", bottom:"아래", bottomSub:"가장 깊은 지점",
-    poseHintA:"편집 중:", poseHintB:" 자세 — ", poseHintSliders:"아래 슬라이더를 쓰거나, ", poseHintC:"그림에서 무릎·엉덩이·머리를 끌어 이 자세의 관절 각도를 정하세요. 바운스는 두 자세 사이를 오갑니다.",
+    poseHintA:"편집 중:", poseHintB:" 자세 — ", poseHintSliders:"아래 슬라이더를 쓰거나, ", poseHintC:"그림에서 무릎·고관절·머리를 끌어 이 자세의 관절 각도를 정하세요. 바운스는 두 자세 사이를 오갑니다.",
     bounceDepth:"바운스 깊이", kneesFwd:"무릎 전방", trunkLean:"상체 기울기", forefoot:"발 앞쪽 체중: 뒤꿈치 ↔ 앞꿈치",
     dynStance:"동역학 & 스탠스", tempo:"템포", softness:"착지 부드러움", footAbs:"발 흡수", weightLeg:"이 다리의 체중",
     stepPattern:"스텝 패턴", inPlace:"제자리", inPlaceSub:"균등", shift:"좌↔우 이동", shiftSub:"체중 이동", triple:"트리플 스텝", tripleSub:"1 앤 2",
@@ -555,16 +561,18 @@ const TXT = {
     mReaction:"관절 반력", mReactionSub:"관절에 가해지는 힘", mEnergy:"근육 에너지", mEnergySub:"신장성 일", mMoment:"관절 모멘트", mMomentSub:"토크 부하", mLoad:"전체 부하 %", mLoadSub:"단일 히트맵",
     cmpTitle:"두 바운스 비교", saveA:"A로 저장", saveB:"B로 저장", load:"불러오기",
     mJointReaction:"관절 반력 (×체중)", mJointMoment:"관절 모멘트 (N·m)", mMuscleForce:"근육 힘 (×체중)", mMuscleEnergy:"근육 에너지 (J)",
-    customNote:"무릎·엉덩이·머리를 끌어 자세를 만드세요. 왼쪽에서 위/아래를 전환한 뒤, 둘 사이 경로를 최적화하세요.",
-    jMtp:"앞꿈치 (MTP)", jAnkle:"발목", jKnee:"무릎", jHip:"엉덩이", jLumbar:"L5/S1 (허리)",
+    customNote:"무릎·고관절·머리를 끌어 자세를 만드세요. 왼쪽에서 위/아래를 전환한 뒤, 둘 사이 경로를 최적화하세요.",
+    jMtp:"앞꿈치 (MTP)", jAnkle:"발목", jKnee:"무릎", jHip:"고관절", jLumbar:"L5/S1 (허리)",
     yourBounce:"내 바운스", optimisedPath:"최적화된 경로", customBounce:"커스텀 바운스", balancedTxt:"균형 잡힘",
     tipForward:"앞으로", tipBackward:"뒤로", impact:"충격", score:"점수",
     balOk:"균형 잡힘", balTip:"쓰러짐:",
     langName:"English", langToggle:"🌐 English", low:"낮음", high:"높음",
+    lgCoM:"무게중심", lgGRF:"지면반력", lgBase:"지지면", airborneTxt:"✈ 공중",
+    optimizeBody:"⚙ 새 체형에 맞게 예시 최적화", optimizing:"⏳ 최적화 중…",
     chooseExample:"예시 바운스를 골라보세요 — 카드를 넘긴 뒤 움직임을 확인하세요.",
     depthHint:"가장 낮은 지점에서의 무릎 굽힘. 린디 펄스는 얕고(~10–30%), 깊은 스쿼트는 80–100%. 더 깊이 내려갈수록 → 충격도 커집니다.",
     kneeHint:"정강이 기울기 / 무릎이 발끝을 넘는 정도. 무릎(슬개대퇴) 부하를 좌우합니다.",
-    trunkHint:"상체를 앞으로 기울이는 정도. 엉덩이와 허리 부하를 좌우합니다.",
+    trunkHint:"상체를 앞으로 기울이는 정도. 고관절과 허리 부하를 좌우합니다.",
     wposHint:"얼마나 앞쪽으로 체중을 싣는지. 뒤꿈치를 들고 무게중심을 앞으로 옮기며 지지면을 앞꿈치로 좁힙니다 — 접촉점은 바운스 내내 계속 움직입니다.",
     tempoHint:"한 박에 한 번 펄스. 템포가 빠를수록 같은 크기라도 → 더 날카롭고 큰 충격이 생깁니다.",
     softHint:"바닥 반환점을 얼마나 부드럽게 흡수하는지. 부드러우면(높음) 충격을 시간에 분산 → 낮은 피크; 뻣뻣하면(낮음) = 거칠고 해로운 충격.",
@@ -573,7 +581,7 @@ const TXT = {
     stepHint:"박마다 발 사이로 체중이 옮겨지는 방식. 위 슬라이더는 이 다리가 지지발일 때의 최대 체중입니다; 재생을 눌러 부하/이완을 보세요.",
     phaseHint:"사이클을 스크럽: 위 → 내려감 → 바닥(피크) → 올라감. 또는 재생을 누르세요.",
     insight1:"⏱ <b>템포가 깊이보다 더 비쌉니다:</b> 바닥 충격은 템포의 <i>제곱</i>으로 커지지만 바운스 크기에는 비례만 합니다 — 빠른 템포에서는 속도만 올리지 말고 바운스를 줄이세요. 한 다리 착지는 이 다리 부하를 약 2배로 만들어 충격과 곱해집니다.",
-    insight2:"⚖ <b>무릎 ↔ 척추 트레이드오프:</b> 앞으로 더 숙인 엉덩이 주도 힌지는 무릎 부하를 낮추지만 엉덩이·허리 부하를 높이고, 더 곧게 선 무릎 주도 바운스는 반대입니다. 좋은 기술은 <i>둘 다</i> 적당하게 유지합니다.",
+    insight2:"⚖ <b>무릎 ↔ 척추 트레이드오프:</b> 앞으로 더 숙인 고관절 주도 힌지는 무릎 부하를 낮추지만 고관절·허리 부하를 높이고, 더 곧게 선 무릎 주도 바운스는 반대입니다. 좋은 기술은 <i>둘 다</i> 적당하게 유지합니다.",
     disclaimer:"교육·예시용일 뿐 의학적 조언이 아닙니다. 힘·모멘트·임계값은 단순화된 2D 준정적 모델과 인구 평균 문헌에서 나온 자릿수 수준의 추정치이며, 임상 측정값이나 부상 기준이 아닙니다. 대부분의 부하는 건강하고 단련된 관절이 안전하게 감당합니다. 과부하 경고는 합격/불합격이 아니라 주의·학습 단계로 보세요. 통증이나 개인 위험 평가는 물리치료사나 스포츠의학 전문가와 상담하세요.",
     chartCycle:"바운스 사이클 동안의 부하", chartStep:"스텝 패턴에 따른 체중 이동",
     cxTop:"↑ 위", cxBottom:"바닥 · 충격", cxTop2:"위 ↑",
@@ -582,7 +590,7 @@ const TXT = {
     vt_moment:"관절 모멘트 (토크)", vu_moment:"N·m",
     vt_energy:"근육 흡수 에너지", vu_energy:"줄(J)",
     vt_load:"전체 부하", vu_load:"한계 대비 %",
-    jl_mtp:"앞꿈치 (MTP)", jl_ankle:"발목", jl_knee:"무릎", jl_hip:"엉덩이", jl_lumbar:"L5/S1 (허리)",
+    jl_mtp:"앞꿈치 (MTP)", jl_ankle:"발목", jl_knee:"무릎", jl_hip:"고관절", jl_lumbar:"L5/S1 (허리)",
     ml_footflex:"발 굴근 / 아치", ml_quad:"대퇴사두근", ml_ham:"햄스트링", ml_glute:"둔근", ml_calf:"종아리 (비복/가자미근)", ml_tibant:"전경골근", ml_erector:"척추기립근",
     ph_top:"위", ph_desc:"내려감", ph_bottom:"바닥", ph_rising:"올라감",
     balOkMsg:" — 움직이는 무게중심(파란 띠; 황색 = 동작 보정 범위)이 바운스 내내 지지면(초록) 위에 머뭅니다.",
@@ -592,7 +600,7 @@ const TXT = {
     cmpImpact:"충격", cmpScore:"점수", cmpBalanced:"균형", cmpTip:"쓰러짐", cmpLoad:"불러오기",
     optLowPeak:"최저 피크 부하", optLowPeakD:"최악 모멘트 최소화", optLowCum:"최저 누적 부하", optLowCumD:"총 부하 최소화",
     optSmooth:"가장 매끄러움", optSmoothD:"가장 평탄한 부하 곡선", optBalanced:"가장 균형적", optBalancedD:"무게중심을 지지면 위 가장 안전하게",
-    optHipLed:"엉덩이 주도", optKneeLed:"무릎 주도", optSync:"동기화", optSoft:"부드러움", optPeak:"피크", optTotal:"총", optOffBal:"불균형", optBal:"균형", optApply:"적용",
+    optHipLed:"고관절 주도", optKneeLed:"무릎 주도", optSync:"동기화", optSoft:"부드러움", optPeak:"피크", optTotal:"총", optOffBal:"불균형", optBal:"균형", optApply:"적용",
     plCustom:"커스텀 바운스", plYour:"내 바운스", plOpt:"최적화된 경로", plDragged:"{end} 자세 드래그됨", plLoaded:"{label} ({k} 불러옴)",
     endTop:"위", endBottom:"아래",
     stepInPlace:"제자리 바운스", stepShift:"좌 ↔ 우 체중 이동 · 2박", stepTriple:"트리플 스텝 (1 앤 2) · 2박",
@@ -608,7 +616,7 @@ const TXT = {
     flKneeBad:"무릎 반력이 과부하 — 깊은 굽힘 + 무릎 전방 + 충격 스파이크가 슬개대퇴/경대퇴 관절에 겹칩니다. 더 얕게, 무릎은 발끝을 따라가게 하세요.",
     flKneeWarn:"무릎 부하가 높습니다 — 깊이를 줄이거나 무릎이 발끝을 넘지 않게 하세요.",
     flLumbarT:"허리 부하 높음",
-    flLumbarBad:"L5/S1 압박이 과부하 — 앞으로 숙임이 사이클 내내 척추를 캔틸레버처럼 만듭니다. 상체를 세우고 중립 척추로 엉덩이에서 힌지하세요.",
+    flLumbarBad:"L5/S1 압박이 과부하 — 앞으로 숙임이 사이클 내내 척추를 캔틸레버처럼 만듭니다. 상체를 세우고 중립 척추로 고관절에서 힌지하세요.",
     flLumbarWarn:"허리 부하가 높습니다 — 상체를 더 곧게 세우세요.",
     flAnkleT:"아킬레스 / 발목 부하 높음",
     flAnkleBad:"아킬레스/발목 부하가 과부하 — 깊고 탄도적이며 앞꿈치 위주입니다. 뒤꿈치가 바닥에 닿게 하고 바닥을 부드럽게 하세요.",
@@ -617,34 +625,34 @@ const TXT = {
     flMtpBad:"앞꿈치 부하가 과부하 — 깊고 탄도적이며 뒤꿈치를 든 바운스가 앞꿈치·MTP 관절·족저근막을 때립니다. 바닥을 부드럽게 하고 바운스 사이에 뒤꿈치를 내리세요.",
     flMtpWarn:"앞꿈치 부하가 높습니다 — 바운스 사이에 뒤꿈치를 바닥에 닿게 하세요.",
     flSingleT:"한 다리 과부하",
-    flSingleB:"거의 모든 체중이 한 다리에 실립니다 — 다리당 부하가 약 2배(엉덩이는 ~2.5–3배)가 되고 충격 스파이크와 곱해집니다. 한 다리가 불가피하면 그 다리를 가장 부드럽게 하세요.",
+    flSingleB:"거의 모든 체중이 한 다리에 실립니다 — 다리당 부하가 약 2배(고관절은 ~2.5–3배)가 되고 충격 스파이크와 곱해집니다. 한 다리가 불가피하면 그 다리를 가장 부드럽게 하세요.",
     flTipFT:"앞으로 쓰러짐",
-    flTipFB:"움직이는 무게중심이 바운스 중 발끝을 넘어 — 앞으로 넘어지게 됩니다. 엉덩이로 앉고, 상체 기울기를 줄이거나, 뒤꿈치를 내려 지지면을 넓히세요.",
+    flTipFB:"움직이는 무게중심이 바운스 중 발끝을 넘어 — 앞으로 넘어지게 됩니다. 고관절을 접어 앉고, 상체 기울기를 줄이거나, 뒤꿈치를 내려 지지면을 넓히세요.",
     flTipBT:"뒤로 쓰러짐",
     flTipBB:"무게중심이 지지면 뒤로 넘어가 — 뒤로 넘어지게 됩니다. 체중을 발 위 앞쪽으로 가져오고, 깊이 앉으며 뒤꿈치를 타지 마세요.",
     flNarrowT:"균형 여유 좁음",
     flNarrowB:"무게중심이 지지면 가장자리에 가깝습니다 — 넘어지기까지 여유가 거의 없습니다(앞꿈치 위에서 흔함, 앞발 지지면이 좁음).",
     flFootT:"발이 바운스를 흡수 중",
-    flFootB:"유연한 앞꿈치·아치·발가락/내재근이 충격을 흡수하며(~{pct}% 발 스프링) 무릎과 엉덩이를 보호합니다.",
+    flFootB:"유연한 앞꿈치·아치·발가락/내재근이 충격을 흡수하며(~{pct}% 발 스프링) 무릎과 고관절을 보호합니다.",
     flGoodT:"부하가 잘 분산됨",
     flGoodB:"낮은 충격, 근육 전반에 분담, 모든 단계에서 관절을 적당히 유지. 보호적인 바운스입니다.",
-    cue1:"엉덩이를 뒤로 보내세요 — 길고 중립적인 척추로 엉덩이에서 힌지. 기울기는 허리를 굽혀서가 아니라 엉덩이에서 나옵니다.",
-    cue2:"무릎이 발끝을 쫓지 않게 — 정강이를 덜 움직여 부하를 무릎에 몰지 말고 발목→무릎→엉덩이 사슬로 나누세요.",
+    cue1:"엉덩이를 뒤로 보내세요 — 길고 중립적인 척추로 고관절에서 힌지. 기울기는 허리를 굽혀서가 아니라 고관절에서 나옵니다.",
+    cue2:"무릎이 발끝을 쫓지 않게 — 정강이를 덜 움직여 부하를 무릎에 몰지 말고 발목→무릎→고관절 사슬로 나누세요.",
     cue3:"부드러운 발목, 부드러운 무릎 — 절대 잠그지 말고 깊은 스쿼트로 가라앉지 마세요. 작은 소프트-니 범위에 머무세요.",
     cue4:"바닥을 밀며 위로 튀어 오르세요(탄성 반동); 아래로 주저앉지 마세요.",
-    cue5:"앞꿈치부터 착지하고 뒤꿈치가 바닥에 닿게 하며 발목–무릎–엉덩이 사슬 전체로 흡수하세요.",
+    cue5:"앞꿈치부터 착지하고 뒤꿈치가 바닥에 닿게 하며 발목–무릎–고관절 사슬 전체로 흡수하세요.",
     cue6:"발이 제 역할을 하게 — 탄력 있는 아치로 굴러 발 + 발가락 굴근을 추가 충격 흡수기로 쓰되, 앞꿈치·족저근막·아킬레스가 과부하되지 않게 절제하세요.",
-    cue7:"무릎을 발 위로 정렬 — 안으로 무너지거나 디딘 무릎을 스위블에서 비트는 것이 무릎 부상 1순위; 엉덩이와 앞꿈치에서 회전하세요.",
+    cue7:"무릎을 발 위로 정렬 — 안으로 무너지거나 디딘 무릎을 스위블에서 비트는 것이 무릎 부상 1순위; 고관절과 앞꿈치에서 회전하세요.",
     cue8:"템포가 빨라질수록 바운스를 더 작게 — 빠른 템포에서는 아주 작은 내부 압축으로 줄어듭니다.",
     cue9:"발을 무게중심 아래에 두세요 — 보폭이 너무 넓으면 무릎에 제동 전단력과 허리 늘림이 더해집니다.",
     cue10:"종아리·발목·후면 사슬을 단련하고 워밍업하세요 — 바운스는 한 다리, 앞꿈치 주도, 고빈도로 몇 시간 이어집니다.",
     cardRefT:"좋은 vs 나쁜", cardRefS:"나란히 비교",
-    cardGoodT:"좋은", cardGoodS:"엉덩이 힌지, 탄력 발",
+    cardGoodT:"좋은", cardGoodS:"고관절 힌지, 탄력 발",
     cardBadT:"나쁜", cardBadS:"곧게 섬, 평발 착지",
     cardGentleT:"부드러운 펄스", cardGentleS:"작고 부드러운 사보이",
     cardDeepT:"깊은 스쿼트", cardDeepS:"무겁고 뻣뻣한 충격",
     cardCustomT:"직접 만들기", cardCustomS:"끌어서 최적화",
-    exGood:"좋은 — 엉덩이 힌지, 탄력 있는 발 (부하 분담)",
+    exGood:"좋은 — 고관절 힌지, 탄력 있는 발 (부하 분담)",
     exBad:"나쁜 — 곧게 섬, 평발 (무릎 집중)",
     exGentle:"부드러운 사보이 펄스 — 작고 부드럽게, 근육 부하",
     exDeep:"깊은 스쿼트 바운스 — 무릎 집중, 뻣뻣한 충격",
@@ -673,8 +681,9 @@ function heelLift(wpos){ return Math.min(1, Math.max(0, (wpos - 0.45) / 0.45)); 
 
 function pose(s){
   const H = s.height;
-  const Lf = SEG.foot.len * H, Ls = SEG.shank.len * H,
-        Lt = SEG.thigh.len * H, Lk = SEG.trunk.len * H;
+  const sc = s.seg || {trunk:1,thigh:1,shank:1,foot:1};   // per-segment length multipliers
+  const Lf = SEG.foot.len * H * (sc.foot||1), Ls = SEG.shank.len * H * (sc.shank||1),
+        Lt = SEG.thigh.len * H * (sc.thigh||1), Lk = SEG.trunk.len * H * (sc.trunk||1);
   const ankleH = 0.039 * H;
 
   // The foot is BENDY: as weight rolls onto the ball, the heel lifts and the foot
@@ -973,7 +982,7 @@ function snapshotBounce(){
   return { mass:state.mass, height:state.height, depth:state.depth, kneeForward:state.kneeForward,
     trunkLean:state.trunkLean, wpos:state.wpos, topPose:Object.assign({}, state.topPose),
     pathCoord:state.pathCoord, bpm:state.bpm, softness:state.softness, weightFrac:state.weightFrac,
-    footSpring:state.footSpring, stepPattern:state.stepPattern,
+    footSpring:state.footSpring, stepPattern:state.stepPattern, seg:Object.assign({}, state.seg),
     label:document.getElementById('poseLabel').textContent };
 }
 // evaluate a saved bounce: peak reaction/moment/force/energy per part + impact, balance, score
@@ -1095,6 +1104,7 @@ function renderFigureInto(svgEl, sol, opts){
   const H = opts.height || state.height;
   const cfg = opts.cfg || state;
   const isMain = !!opts.isMain;
+  const jdOn = isMain && (typeof jointDragOn==='function' ? jointDragOn() : true);  // joint-angle drag: Custom/advanced only
   const scale = (VB.h-110) / (H*1.08);
   const originX = VB.w/2 - 30;
   const groundY = VB.h-46;
@@ -1116,9 +1126,8 @@ function renderFigureInto(svgEl, sol, opts){
   // GRF line of action — only while in contact with the ground
   if(!airborne){
     g += `<line x1="${cop.X}" y1="${groundY}" x2="${cop.X}" y2="${groundY-scale*0.9}" stroke="#5b6675" stroke-width="1.4" stroke-dasharray="4 4"/>`;
-    g += `<text x="${cop.X+4}" y="${groundY-scale*0.9+12}" fill="#5b6675" font-size="10">GRF</text>`;
   } else {
-    g += `<text x="${VB.w-66}" y="34" fill="#58a6ff" font-size="12">✈ airborne</text>`;
+    g += `<text x="${VB.w-70}" y="34" fill="#58a6ff" font-size="12">${t('airborneTxt')}</text>`;
   }
   // base of support (on the ground) + centre-of-mass plumb line (balance check)
   const bbk=P0({x:p.baseBack,y:0}), bfr=P0({x:p.baseFront,y:0});
@@ -1127,7 +1136,6 @@ function renderFigureInto(svgEl, sol, opts){
   g += `<line x1="${bbk.X.toFixed(1)}" y1="${groundY+3}" x2="${bfr.X.toFixed(1)}" y2="${groundY+3}" stroke="${airborne?'#39414d':(balanced?'#3fb950':'#f85149')}" stroke-width="4" stroke-linecap="round"/>`;
   g += `<line x1="${comPt.X.toFixed(1)}" y1="${comPt.Y.toFixed(1)}" x2="${comG.X.toFixed(1)}" y2="${groundY}" stroke="${balanced?'#5b6675':'#f85149'}" stroke-width="1.2" stroke-dasharray="3 3"/>`;
   g += `<circle cx="${comPt.X.toFixed(1)}" cy="${comPt.Y.toFixed(1)}" r="5" fill="${balanced?'#e6edf3':'#f85149'}" stroke="#0d1117" stroke-width="1.5"/>`;
-  g += `<text x="${(comPt.X+8).toFixed(1)}" y="${(comPt.Y+3).toFixed(1)}" fill="#8b98a6" font-size="10">CoM</text>`;
 
   // limb base (dark) under the muscle bands
   const baseW = Math.max(10, scale*0.052);
@@ -1162,7 +1170,7 @@ function renderFigureInto(svgEl, sol, opts){
   function joint(pt,key){
     const mm = m('joint',key);
     const r = mm.muted ? 7 : 7 + 9*Math.max(0,Math.min(1,mm.t));
-    const drag = (isMain && (key==='knee'||key==='hip')) ? ` class="jdrag" data-j="${key}" style="cursor:grab"` : '';
+    const drag = (jdOn && (key==='knee'||key==='hip')) ? ` class="jdrag" data-j="${key}" style="cursor:grab"` : '';
     return `<circle${drag} cx="${pt.X}" cy="${pt.Y}" r="${r.toFixed(1)}" fill="${col(mm)}" stroke="#0d1117" stroke-width="2"/>`;
   }
   g += joint(ball,'mtp');
@@ -1171,9 +1179,32 @@ function renderFigureInto(svgEl, sol, opts){
   g += joint(hip,'hip');
   g += joint(lum,'lumbar');
 
-  // head (drag to set trunk lean)
-  const headDrag = isMain ? ' class="jdrag" data-j="trunk" style="cursor:grab"' : '';
+  // head (drag to set trunk lean — Custom/advanced only)
+  const headDrag = jdOn ? ' class="jdrag" data-j="trunk" style="cursor:grab"' : '';
   g += `<circle${headDrag} cx="${(sh.X+Math.sin(p.thetaL)*14).toFixed(1)}" cy="${(sh.Y-16).toFixed(1)}" r="13" fill="#2b323c" stroke="#39414d" stroke-width="2"/>`;
+
+  // segment-length drag handles (alongside each segment) — available wherever the main figure is editable
+  if(isMain){
+    const segPairs=[['trunk',hip,sh,1],['thigh',knee,hip,-1],['shank',ankle,knee,-1],['foot',heel,toe,1]];
+    for(const [key,A,B,side] of segPairs){
+      const dx=B.X-A.X, dy=B.Y-A.Y, L=Math.hypot(dx,dy)||1, nx=-dy/L*side, ny=dx/L*side;
+      const off=17, kx=(A.X+B.X)/2+nx*off, ky=(A.Y+B.Y)/2+ny*off;
+      g += `<line x1="${(A.X+nx*off).toFixed(1)}" y1="${(A.Y+ny*off).toFixed(1)}" x2="${(B.X+nx*off).toFixed(1)}" y2="${(B.Y+ny*off).toFixed(1)}" stroke="#58a6ff" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.4"/>`;
+      g += `<circle class="seghandle" data-seg="${key}" cx="${kx.toFixed(1)}" cy="${ky.toFixed(1)}" r="7.5" fill="#0d1117" stroke="#58a6ff" stroke-width="2" style="cursor:grab"/>`;
+      g += `<line x1="${(kx-3).toFixed(1)}" y1="${ky.toFixed(1)}" x2="${(kx+3).toFixed(1)}" y2="${ky.toFixed(1)}" stroke="#58a6ff" stroke-width="1.3" pointer-events="none"/>`;
+      g += `<line x1="${kx.toFixed(1)}" y1="${(ky-3).toFixed(1)}" x2="${kx.toFixed(1)}" y2="${(ky+3).toFixed(1)}" stroke="#58a6ff" stroke-width="1.3" pointer-events="none"/>`;
+    }
+  }
+
+  // marker legend (top-left corner) — replaces the old inline CoM/GRF labels
+  const lx=16, ly=18, lh=17;
+  g += `<rect x="${lx-6}" y="${ly-13}" width="150" height="${3*lh+2}" rx="6" fill="#0d1117" fill-opacity="0.55" stroke="#2a313c" stroke-width="1"/>`;
+  g += `<circle cx="${lx+4}" cy="${ly}" r="4.5" fill="#e6edf3" stroke="#0d1117" stroke-width="1"/>`;
+  g += `<text x="${lx+15}" y="${ly+4}" fill="#9aa7b4" font-size="11.5">${t('lgCoM')}</text>`;
+  g += `<line x1="${lx}" y1="${ly+lh}" x2="${lx+9}" y2="${ly+lh}" stroke="#5b6675" stroke-width="1.6" stroke-dasharray="3 3"/>`;
+  g += `<text x="${lx+15}" y="${ly+lh+4}" fill="#9aa7b4" font-size="11.5">${t('lgGRF')}</text>`;
+  g += `<line x1="${lx}" y1="${ly+2*lh}" x2="${lx+9}" y2="${ly+2*lh}" stroke="#3fb950" stroke-width="4.5" stroke-linecap="round"/>`;
+  g += `<text x="${lx+15}" y="${ly+2*lh+4}" fill="#9aa7b4" font-size="11.5">${t('lgBase')}</text>`;
 
   svgEl.innerHTML = g;
 }
@@ -1609,21 +1640,38 @@ function tick(ts){
 }
 
 // ---- drag knee / hip / head in the figure to pose the selected (top/bottom) keyframe ----
-let dragJoint=null;
+let dragJoint=null, dragSeg=null;
 fig.addEventListener('pointerdown', e=>{
-  const j = e.target && e.target.getAttribute && e.target.getAttribute('data-j');
-  if(j){ dragJoint=j; try{ fig.setPointerCapture(e.pointerId); }catch(_){ } e.preventDefault(); }
+  const get = a => e.target && e.target.getAttribute && e.target.getAttribute(a);
+  const seg = get('data-seg'), j = get('data-j');
+  if(seg){ dragSeg=seg; try{ fig.setPointerCapture(e.pointerId); }catch(_){ } e.preventDefault(); }
+  else if(j){ dragJoint=j; try{ fig.setPointerCapture(e.pointerId); }catch(_){ } e.preventDefault(); }
 });
 fig.addEventListener('pointermove', e=>{
-  if(!dragJoint || !RENDER_VIEW) return;
+  if((!dragJoint && !dragSeg) || !RENDER_VIEW) return;
   const rect=fig.getBoundingClientRect();
   const sx=(e.clientX-rect.left)/rect.width*VB.w, sy=(e.clientY-rect.top)/rect.height*VB.h;
   const V=RENDER_VIEW, mx=(sx-V.originX)/V.scale, my=(V.groundY-V.liftPx-sy)/V.scale;
-  applyJointDrag(dragJoint, mx, my);
+  if(dragSeg) applySegDrag(dragSeg, mx, my);
+  else applyJointDrag(dragJoint, mx, my);
 });
-const endDrag=()=>{ dragJoint=null; };
+const endDrag=()=>{ dragJoint=null; dragSeg=null; };
 fig.addEventListener('pointerup', endDrag);
 fig.addEventListener('pointercancel', endDrag);
+// drag a length handle alongside a segment to change that body part's length
+function applySegDrag(seg, mx, my){
+  const P=RENDER_VIEW.pose, H=state.height;
+  const pairs={ trunk:[P.hip,P.shoulder,'trunk'], thigh:[P.knee,P.hip,'thigh'],
+                shank:[P.ankle,P.knee,'shank'], foot:[P.heel,P.toe,'foot'] };
+  const [a,b,key]=pairs[seg]; if(!a) return;
+  const ux=b.x-a.x, uy=b.y-a.y, L=Math.hypot(ux,uy)||1;
+  const proj=((mx-a.x)*ux+(my-a.y)*uy)/L;            // length along the segment axis (m)
+  const base=SEG[key].len*H;
+  state.seg[seg]=Math.min(1.5, Math.max(0.6, proj/base));
+  markBodyChanged();
+  document.getElementById('poseLabel').textContent=t('plCustom');
+  recompute();
+}
 function applyJointDrag(joint, mx, my){
   const pose = state.editEnd==='top' ? state.topPose : state;
   const P = RENDER_VIEW.pose, DEG=180/Math.PI, cl=v=>Math.min(1,Math.max(0,v));
@@ -1672,7 +1720,24 @@ const EXAMPLES = [
   { id:'deep',   view:'one', cfg:EX_DEEP,   titleKey:'cardDeepT',   subKey:'cardDeepS' },
   { id:'custom', view:'custom', titleKey:'cardCustomT', subKey:'cardCustomS' },
 ];
-let easyView='ref', easyExId='ref';
+let easyView='ref', easyExId='ref', examplesStale=false;
+// joint-angle dragging: only in Custom (easy) or advanced mode. Length dragging is always on.
+function jointDragOn(){
+  const app=document.querySelector('.app');
+  if(!app.classList.contains('easy')) return true;
+  return easyView==='custom';
+}
+// a body-length change makes the curated examples stale until "Optimize to new body" is pressed
+function markBodyChanged(){
+  if(examplesStale) return;
+  examplesStale=true;
+  renderCarousel();
+  updateOptimizeBtn();
+}
+function updateOptimizeBtn(){
+  const b=document.getElementById('optimizeBody'); if(!b) return;
+  b.style.display = examplesStale ? '' : 'none';
+}
 function applyConfig(cfg){
   Object.assign(state, { mass:cfg.mass, height:cfg.height, depth:cfg.depth, kneeForward:cfg.kneeForward,
     trunkLean:cfg.trunkLean, wpos:cfg.wpos, topPose:Object.assign({},cfg.topPose), pathCoord:cfg.pathCoord,
@@ -1689,10 +1754,14 @@ function refreshEasyLabel(){
 }
 function renderCarousel(){
   const host=document.getElementById('easySel'); if(!host) return;
-  host.innerHTML = EXAMPLES.map((e,i)=>
-    `<div class="mode${e.id===easyExId?' active':''}" data-ex="${i}"><b>${t(e.titleKey)}</b><span>${t(e.subKey)}</span></div>`).join('');
+  host.innerHTML = EXAMPLES.map((e,i)=>{
+    const dis = examplesStale && e.id!=='custom';
+    return `<div class="mode${e.id===easyExId?' active':''}${dis?' disabled':''}" data-ex="${i}"><b>${t(e.titleKey)}</b><span>${t(e.subKey)}</span></div>`;
+  }).join('');
   host.querySelectorAll('.mode').forEach(el=>el.addEventListener('click',()=>{
-    const e=EXAMPLES[+el.dataset.ex]; setEasyView(e.view, e.id, e.cfg);
+    const e=EXAMPLES[+el.dataset.ex];
+    if(examplesStale && e.id!=='custom') return;   // disabled until re-optimised for the new body
+    setEasyView(e.view, e.id, e.cfg);
   }));
 }
 function setEasyView(view, exId, cfg){
@@ -1712,10 +1781,67 @@ function setEasyView(view, exId, cfg){
   } else {
     if(state.playing) togglePlay(false);
     document.getElementById('poseLabel').textContent=t('plYour');
+    recompute();   // refresh so joint + length drag handles appear for editing
   }
+  updateOptimizeBtn();
 }
 document.getElementById('easyOpt').addEventListener('click',()=>runOptimizer('easyOptResults'));
 document.getElementById('easyPlay').addEventListener('click',()=>togglePlay());
+
+// ----- Re-derive the example bounces for an adjusted body ("Optimize to new body") -----
+// searchGood: grid-search posture + path for the highest joint-protection score at this body.
+// Bounded to ~9s of wall-clock; if it runs over it returns the best found so far (fast fallback).
+function searchGood(seg){
+  const t0=performance.now(), budget=9000;
+  const base={ id:'good', mass:state.mass, height:state.height, topPose:Object.assign({},EZ_TOP),
+    bpm:110, weightFrac:0.55, footSpring:0.85, stepPattern:'even', labelKey:'exGood', seg:Object.assign({},seg) };
+  // a Good bounce is a meaningful, representative pulse (~0.30 depth) with the safest technique for THIS body
+  const depths=[0.26,0.30,0.36], knees=[0.26,0.34,0.44], trunks=[0.22,0.32,0.42],
+        coords=[-0.5,-0.2,0.1], wps=[0.56,0.62], softs=[0.82,0.92];
+  let best=null, bestScore=-1e9, stop=false;
+  for(const d of depths){ for(const k of knees){ for(const tr of trunks){ for(const c of coords){ for(const w of wps){ for(const so of softs){
+    const cfg=Object.assign({}, base, {depth:d, kneeForward:k, trunkLean:tr, pathCoord:c, wpos:w, softness:so});
+    const ev=evaluateBounce(cfg);
+    const sc=ev.score - (ev.bal.tipping!=='ok'?40:0) - Math.max(0,ev.jr.knee-3)*4
+           - Math.max(0,ev.jr.lumbar-4)*3 - Math.abs(d-0.30)*18;   // bias toward a representative depth
+    if(sc>bestScore){ bestScore=sc; best=cfg; }
+    if(performance.now()-t0>budget){ stop=true; break; }
+  } if(stop)break; } if(stop)break; } if(stop)break; } if(stop)break; } if(stop)break; }
+  return best || Object.assign({}, base, {depth:0.30,kneeForward:0.34,trunkLean:0.30,wpos:0.62,softness:0.85,pathCoord:-0.4});
+}
+function deriveBad(good, seg){
+  // same vertical travel (depth) as Good, but upright + stiff + flat foot → knee-loaded contrast
+  return { id:'bad', mass:state.mass, height:state.height, topPose:Object.assign({},EZ_TOP),
+    depth:good.depth, kneeForward:Math.min(0.95, good.kneeForward+0.34), trunkLean:0.05, wpos:0.50,
+    pathCoord:0.4, bpm:110, softness:0.26, weightFrac:0.55, footSpring:0.16, stepPattern:'even',
+    labelKey:'exBad', seg:Object.assign({},seg) };
+}
+function deriveGentle(good, seg){
+  return Object.assign({}, good, { id:'gentle', depth:Math.max(0.12, good.depth*0.55),
+    softness:Math.min(0.95, good.softness+0.05), bpm:120, footSpring:0.85, labelKey:'exGentle', seg:Object.assign({},seg) });
+}
+function deriveDeep(bad, seg){
+  return Object.assign({}, bad, { id:'deep', depth:Math.min(0.80, bad.depth+0.30),
+    kneeForward:Math.min(0.95, bad.kneeForward+0.10), bpm:130, labelKey:'exDeep', seg:Object.assign({},seg) });
+}
+function regenerateExamples(){
+  const btn=document.getElementById('optimizeBody');
+  btn.textContent=t('optimizing'); btn.disabled=true;
+  setTimeout(()=>{                                 // let the button repaint before the heavy search
+    const seg=Object.assign({}, state.seg);
+    const good=searchGood(seg);
+    Object.assign(EX_GOOD, good);
+    Object.assign(EX_BAD, deriveBad(good, seg));
+    Object.assign(EX_GENTLE, deriveGentle(good, seg));
+    Object.assign(EX_DEEP, deriveDeep(deriveBad(good, seg), seg));
+    examplesStale=false; btn.disabled=false; btn.textContent=t('optimizeBody');
+    updateOptimizeBtn(); renderCarousel();
+    if(easyView==='ref') setEasyView('ref');
+    else if(easyView==='one'){ const e=EXAMPLES.find(x=>x.id===easyExId)||EXAMPLES[1]; setEasyView('one', e.id, e.cfg); }
+    // custom view: leave the user's own bounce untouched — the examples are simply ready again
+  }, 30);
+}
+document.getElementById('optimizeBody').addEventListener('click', regenerateExamples);
 
 // advanced toggle: switch between Easy mode and the full controls
 document.getElementById('simpleToggle').addEventListener('click',()=>{
