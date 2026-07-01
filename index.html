@@ -142,15 +142,41 @@
   .app.easy.view-custom .compare{display:none}
   .app.easy.view-custom #easyPlayMain{display:none}
   .app.easy.view-one .compare, .app.easy.view-one .posesec{display:none}
+  /* video analyzer view */
+  .analyzepanel{display:none; width:100%}
+  .app.easy.view-analyze .figmain, .app.easy.view-analyze .compare, .app.easy.view-analyze .posesec, .app.easy.view-analyze .chart{display:none}
+  .app.easy.view-analyze .col.right{display:none}
+  .app.easy.view-analyze{grid-template-columns:300px 1fr}
+  .app.easy.view-analyze .analyzepanel{display:block}
+  .anhead{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px}
+  .anhead strong{font-size:15px}
+  .anprivacy{font-size:11.5px; color:var(--good); background:rgba(63,185,80,.08); border:1px solid rgba(63,185,80,.3); border-radius:8px; padding:7px 10px; margin:6px 0}
+  .anintro{font-size:12px; color:var(--muted); margin:6px 0 10px}
+  .anstage{position:relative; width:100%; background:#000; border:1px solid var(--line); border-radius:12px; overflow:hidden; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center}
+  .anstage video{max-width:100%; max-height:100%; display:block}
+  .anstage canvas{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+  .anempty{color:var(--muted); font-size:12.5px; text-align:center; padding:20px}
+  .anrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0}
+  .anprog{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:6px; overflow:hidden; margin:8px 0}
+  .anprog > i{display:block; height:100%; width:0; background:var(--accent); transition:width .1s}
+  .anstatus{font-size:12px; color:var(--muted); margin:4px 0; min-height:16px}
+  .anmetrics{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0}
+  .anmetric{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:8px 10px}
+  .anmetric .v{font-size:18px; font-weight:700; font-variant-numeric:tabular-nums}
+  .anmetric .l{font-size:10.5px; color:var(--muted); margin-top:2px}
+  .ancues{list-style:none; padding:0; margin:6px 0}
+  .ancues li{display:flex; gap:8px; align-items:flex-start; padding:8px 10px; border-radius:8px; margin:6px 0; font-size:12.5px; border:1px solid var(--line); background:var(--panel2)}
+  .ancues li.good{border-color:rgba(63,185,80,.4)} .ancues li.bad{border-color:rgba(248,81,73,.4)}
+  .anverdict{font-size:14px; font-weight:700; margin:8px 0}
   .app.easy.view-ref .figmain, .app.easy.view-ref .posesec{display:none}
   .app.easy.view-ref .col.right{display:none}
   .app.easy.view-ref{grid-template-columns:300px 1fr}
   .easycustom .cbtn{margin:0 6px 6px 0}
   /* below desktop: never keep the fixed 300px sidebar (it squeezes the animation off-screen) */
-  @media (max-width:1100px){ .app.easy.view-ref{grid-template-columns:1fr} }
+  @media (max-width:1100px){ .app.easy.view-ref, .app.easy.view-analyze{grid-template-columns:1fr} }
   /* mobile-first: figure/animation prominent, controls below */
   @media (max-width:760px){
-    .app, .app.easy.view-ref{grid-template-columns:1fr}
+    .app, .app.easy.view-ref, .app.easy.view-analyze{grid-template-columns:1fr}
     .col{padding:12px; overflow:visible}
     .col.left{border-right:none; border-bottom:1px solid var(--line); order:1}
     .col.center{order:2}
@@ -351,6 +377,41 @@
         </div>
         <svg id="cmpChart" viewBox="0 0 520 210" xmlns="http://www.w3.org/2000/svg" aria-label="Peak load per joint/muscle — bounce A vs B"></svg>
       </div>
+
+      <!-- ===== VIDEO ANALYZER ===== -->
+      <div class="analyzepanel">
+        <div class="anhead"><strong data-i18n="anTitle">🎥 Analyze my bounce</strong><button class="cbtn" id="anBack" data-i18n="anBack">← Back</button></div>
+        <div class="anprivacy" data-i18n="anPrivacy">🔒 Analyzed entirely on your device — your video is never uploaded.</div>
+        <div class="anintro" data-i18n="anIntro">Film yourself from the side doing a few bounces, then upload the clip to check your technique.</div>
+        <div class="anrow">
+          <button class="btn" id="anPick" data-i18n="anPick" style="flex:0 0 auto">📁 Choose a video…</button>
+          <span id="anFileName" style="font-size:12px;color:var(--muted)"></span>
+          <input type="file" id="anFile" accept="video/*" style="display:none">
+        </div>
+        <div class="anstage" id="anStage">
+          <div class="anempty" id="anEmpty">🎥</div>
+          <video id="anVideo" playsinline muted style="display:none"></video>
+          <canvas id="anCanvas" style="display:none"></canvas>
+        </div>
+        <div class="anrow">
+          <button class="btn on" id="anRun" data-i18n="anAnalyze" style="flex:1">▶ Analyze bounce</button>
+          <button class="cbtn" id="anReplay" style="display:none" data-i18n="anReplay">⟳ Replay with skeleton</button>
+        </div>
+        <div class="anprog" id="anProgWrap" style="display:none"><i id="anProg"></i></div>
+        <div class="anstatus" id="anStatus"></div>
+        <div id="anResults" style="display:none">
+          <h2 data-i18n="anResults" style="margin-top:6px">Results</h2>
+          <div class="anverdict" id="anVerdict"></div>
+          <div class="score"><div class="big" id="anScore">—</div><div class="lbl" data-i18n="anScoreLbl">Estimated joint-protection score</div></div>
+          <div class="bar"><i id="anScoreBar" style="width:0%"></i></div>
+          <h2 data-i18n="anMeasured">Measured from your video</h2>
+          <div class="anmetrics" id="anMetrics"></div>
+          <h2 data-i18n="anCues">What to work on</h2>
+          <ul class="ancues" id="anCueList"></ul>
+          <h2 data-i18n="anPerRep">Per-bounce breakdown</h2>
+          <div id="anReps"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -489,6 +550,31 @@ const TXT = {
     lgCoM:"centre of mass", lgGRF:"ground reaction", lgBase:"base of support", airborneTxt:"✈ airborne",
     optimizeBody:"⚙ Optimize examples to new body", optimizing:"⏳ Optimizing…",
     feedbackMsg:"💬 Got feedback or ideas? Help improve this tool",
+    anCard:"🎥 Analyze", anCardSub:"upload a video",
+    anTitle:"🎥 Analyze my bounce", anBack:"← Back",
+    anPrivacy:"🔒 Analyzed entirely on your device — your video is never uploaded.",
+    anIntro:"Film yourself from the side doing a few bounces (whole body in frame, good light), then upload the clip to check your technique.",
+    anPick:"📁 Choose a video…", anAnalyze:"▶ Analyze bounce",
+    anLoadingEngine:"Loading the pose engine (first run downloads a small model)…",
+    anProcessing:"Analyzing frames…",
+    anReplay:"⟳ Replay with skeleton", anReplayStop:"❚❚ Stop",
+    anNoFile:"Pick a side-view video first.",
+    anNoPose:"Couldn't track a person clearly. Use a well-lit clip filmed from the side with your whole body in frame.",
+    anErr:"Couldn't load the analyzer (it needs internet the first time). Check your connection and retry.",
+    anResults:"Results", anScoreLbl:"Estimated joint-protection score",
+    anMeasured:"Measured from your video",
+    anReps:"Bounces detected", anTempo:"Tempo", anDepth:"Bounce depth", anTrunk:"Trunk lean (hip hinge)", anKnee:"Knees forward", anSym:"Left/right symmetry",
+    anCues:"What to work on", anVerdictGood:"Protective bounce — nice work", anVerdictOk:"Decent — a few things to tune", anVerdictWork:"Needs work — see the cues below",
+    anPerRep:"Per-bounce breakdown", anRepN:"Bounce", anColDepth:"depth", anColKnee:"knee", anColTrunk:"trunk",
+    anCueUpright:"You're quite upright — send your hips back and hinge more from the hip so load shares down the chain instead of stacking on the knees.",
+    anCueOverHinge:"You're hinging a lot — keep a long, neutral spine so the low back isn't overloaded.",
+    anCueKneesOver:"Your knees drift past your toes — keep the shins quieter and track the knees over the feet.",
+    anCueDeep:"The bounce is deep — keep it a shallow, springy pulse rather than a squat.",
+    anCueStiff:"The landing looks stiff — soften the ankles and knees so you absorb the bottom instead of slamming it.",
+    anCueAsym:"Your two sides differ — try to load both legs evenly.",
+    anCueGoodHinge:"Nice hip hinge — hips back, spine long.",
+    anCueGoodSoft:"Soft, springy landing — well absorbed.",
+    anCueGoodDepth:"Good shallow pulse — not sinking into a squat.",
     help:"Help", helpEasyTitle:"How to use — Easy mode", helpAdvTitle:"How to use — Advanced controls",
     helpEasyBody:"<ol><li><b>Pick an example</b> from the cards at the top — swipe them: <b>Good vs Bad</b>, single examples (Good, Bad, Gentle pulse, Deep squat), or <b>Custom</b>.</li><li><b>Good vs Bad</b> plays the two techniques side by side. Colours show load — blue = low, red = high — on the joints (circles) and muscles (bands).</li><li>Use the <b>▶ / ❚❚</b> button to play or pause the bounce.</li><li><b>Custom</b>: drag the <b>knee, hip and head</b> to shape your own pose. Switch <b>Top / Bottom</b> on the left to edit the start vs the deepest point, then <b>Find optimal path</b> for the smoothest route between them.</li><li><b>Resize the body</b>: drag the small blue handle alongside any segment (torso, thigh, shank, foot). Then press <b>Optimize examples to new body</b> to re-derive the examples for your proportions.</li><li>The <b>legend</b> in the figure marks the centre of mass (CoM), the ground reaction (GRF) and the base of support.</li><li><b>🌐</b> switches Korean / English. <b>Advanced controls</b> reveals the full sliders, the readout panel and A/B comparison.</li></ol>",
     helpAdvBody:"<ol><li><b>Body &amp; pose sliders</b> set mass, height, bounce depth, knees-forward, trunk lean and forefoot weighting.</li><li><b>Top / Bottom</b> toggle edits the start vs the deepest pose — the bounce travels between them. Drag the <b>knee, hip, head</b> in the figure, or the blue handles to change <b>segment lengths</b>.</li><li><b>Dynamics &amp; stance</b>: tempo, landing softness, foot absorption, weight on this leg, and the step pattern (in place / L↔R / triple-step).</li><li><b>▶ Animate</b> plays the cycle; the <b>Bounce phase</b> slider scrubs it.</li><li><b>Find optimal paths</b> searches the best movement between your top &amp; bottom poses (lowest peak load / smoothest / most balanced).</li><li><b>Readout panel</b> (right): peak loads, fore–aft balance, a joint-protection score, warning flags, and per-joint / per-muscle tables. Switch the heatmap metric at the top (reaction / energy / moment / load).</li><li><b>Compare two bounces</b>: press <b>Save as A</b>, change the settings, then <b>Save as B</b> to see them side by side with per-joint bars.</li><li><b>Easy mode</b> returns to the simple beginner view.</li></ol>",
@@ -608,6 +694,31 @@ const TXT = {
     lgCoM:"무게중심", lgGRF:"지면반력", lgBase:"지지면", airborneTxt:"✈ 공중",
     optimizeBody:"⚙ 새 체형에 맞게 예시 최적화", optimizing:"⏳ 최적화 중…",
     feedbackMsg:"💬 의견이나 아이디어가 있으신가요? 이 도구 개선을 도와주세요",
+    anCard:"🎥 분석", anCardSub:"영상 업로드",
+    anTitle:"🎥 내 바운스 분석", anBack:"← 뒤로",
+    anPrivacy:"🔒 전적으로 기기에서 분석됩니다 — 영상은 업로드되지 않습니다.",
+    anIntro:"옆에서 바운스 몇 번을 촬영한 뒤(온몸이 화면에, 밝은 곳) 영상을 올려 기술을 확인하세요.",
+    anPick:"📁 영상 선택…", anAnalyze:"▶ 바운스 분석",
+    anLoadingEngine:"포즈 엔진 로딩 중(첫 실행 시 작은 모델을 내려받습니다)…",
+    anProcessing:"프레임 분석 중…",
+    anReplay:"⟳ 스켈레톤으로 재생", anReplayStop:"❚❚ 정지",
+    anNoFile:"먼저 옆에서 찍은 영상을 선택하세요.",
+    anNoPose:"사람을 명확히 추적하지 못했습니다. 온몸이 나오도록 옆에서 밝게 찍은 영상을 사용하세요.",
+    anErr:"분석기를 불러오지 못했습니다(첫 실행에는 인터넷이 필요합니다). 연결을 확인하고 다시 시도하세요.",
+    anResults:"결과", anScoreLbl:"추정 관절 보호 점수",
+    anMeasured:"영상에서 측정됨",
+    anReps:"감지된 바운스", anTempo:"템포", anDepth:"바운스 깊이", anTrunk:"상체 기울기(고관절 힌지)", anKnee:"무릎 전방", anSym:"좌우 대칭",
+    anCues:"개선할 점", anVerdictGood:"보호적인 바운스 — 좋아요", anVerdictOk:"괜찮음 — 몇 가지 다듬어 보세요", anVerdictWork:"개선 필요 — 아래 팁 참고",
+    anPerRep:"바운스별 분석", anRepN:"바운스", anColDepth:"깊이", anColKnee:"무릎", anColTrunk:"상체",
+    anCueUpright:"너무 곧게 서 있습니다 — 엉덩이를 뒤로 보내고 고관절에서 더 접어 부하가 무릎에 쌓이지 않고 사슬로 분산되게 하세요.",
+    anCueOverHinge:"많이 숙이고 있습니다 — 길고 중립적인 척추를 유지해 허리가 과부하되지 않게 하세요.",
+    anCueKneesOver:"무릎이 발끝을 넘어갑니다 — 정강이를 덜 움직이고 무릎이 발 위로 오게 하세요.",
+    anCueDeep:"바운스가 깊습니다 — 스쿼트가 아니라 얕고 탄력 있는 펄스로 유지하세요.",
+    anCueStiff:"착지가 뻣뻣해 보입니다 — 발목과 무릎을 부드럽게 해 바닥을 찧지 말고 흡수하세요.",
+    anCueAsym:"양쪽이 다릅니다 — 두 다리에 고르게 실어 보세요.",
+    anCueGoodHinge:"좋은 고관절 힌지 — 엉덩이 뒤로, 척추는 길게.",
+    anCueGoodSoft:"부드럽고 탄력 있는 착지 — 잘 흡수했습니다.",
+    anCueGoodDepth:"좋은 얕은 펄스 — 스쿼트로 가라앉지 않았습니다.",
     help:"도움말", helpEasyTitle:"사용법 — 쉬운 모드", helpAdvTitle:"사용법 — 고급 설정",
     helpEasyBody:"<ol><li>위쪽 카드에서 <b>예시를 고르세요</b> — 넘기면서: <b>좋은 vs 나쁜</b>, 단일 예시(좋은, 나쁜, 부드러운 펄스, 깊은 스쿼트), 또는 <b>직접 만들기</b>.</li><li><b>좋은 vs 나쁜</b>은 두 기술을 나란히 재생합니다. 색은 부하를 나타냅니다 — 파랑 = 낮음, 빨강 = 높음 — 관절(원)과 근육(띠)에서.</li><li><b>▶ / ❚❚</b> 버튼으로 바운스를 재생하거나 멈추세요.</li><li><b>직접 만들기</b>: <b>무릎·고관절·머리</b>를 끌어 자세를 만드세요. 왼쪽에서 <b>위 / 아래</b>를 전환해 시작과 가장 깊은 지점을 편집한 뒤, <b>최적 경로 찾기</b>로 둘 사이 가장 매끄러운 경로를 보세요.</li><li><b>체형 바꾸기</b>: 각 부위(상체·허벅지·정강이·발) 옆의 작은 파란 핸들을 끌어 길이를 바꾸세요. 그런 다음 <b>새 체형에 맞게 예시 최적화</b>를 눌러 체형에 맞는 예시를 다시 만드세요.</li><li>그림의 <b>범례</b>는 무게중심(CoM), 지면반력(GRF), 지지면을 표시합니다.</li><li><b>🌐</b>는 한국어 / 영어를 전환합니다. <b>고급 설정</b>은 모든 슬라이더, 판독 패널, A/B 비교를 보여줍니다.</li></ol>",
     helpAdvBody:"<ol><li><b>신체 &amp; 자세 슬라이더</b>로 체중, 키, 바운스 깊이, 무릎 전방, 상체 기울기, 발 앞쪽 체중을 설정합니다.</li><li><b>위 / 아래</b> 전환으로 시작 자세와 가장 깊은 자세를 편집합니다 — 바운스는 둘 사이를 오갑니다. 그림에서 <b>무릎·고관절·머리</b>를, 또는 파란 핸들로 <b>부위 길이</b>를 끌어 바꾸세요.</li><li><b>동역학 &amp; 스탠스</b>: 템포, 착지 부드러움, 발 흡수, 이 다리의 체중, 스텝 패턴(제자리 / 좌↔우 / 트리플 스텝).</li><li><b>▶ 재생</b>은 사이클을 재생하고, <b>바운스 단계</b> 슬라이더로 스크럽합니다.</li><li><b>최적 경로 찾기</b>는 위·아래 자세 사이 최적의 움직임을 검색합니다(최저 피크 / 가장 매끄러움 / 가장 균형적).</li><li><b>판독 패널</b>(오른쪽): 최대 부하, 앞–뒤 균형, 관절 보호 점수, 경고, 관절별/근육별 표. 위에서 히트맵 지표를 전환하세요(반력 / 에너지 / 모멘트 / 부하).</li><li><b>두 바운스 비교</b>: <b>A로 저장</b>을 누르고 설정을 바꾼 뒤 <b>B로 저장</b>을 누르면 관절별 막대로 나란히 비교합니다.</li><li><b>쉬운 모드</b>는 간단한 초보자 화면으로 돌아갑니다.</li></ol>",
@@ -718,6 +829,7 @@ function applyLang(){
   const hb=document.getElementById('helpBtn'); if(hb) hb.title=t('help');
   const hm=document.getElementById('helpModal');
   if(hm && hm.style.display!=='none' && typeof openHelp==='function') openHelp();   // re-render open guide in new language
+  if(typeof AN!=='undefined' && AN.result && document.querySelector('.app').classList.contains('view-analyze') && typeof anRender==='function') anRender(AN.result);
   if(typeof recompute==='function'){ recompute(); renderCompare(); }
 }
 function toggleLang(){ LANG = LANG==='en' ? 'ko' : 'en'; localStorage.setItem('blab_lang', LANG); applyLang(); }
@@ -1775,6 +1887,7 @@ const EXAMPLES = [
   { id:'gentle', view:'one', cfg:EX_GENTLE, titleKey:'cardGentleT', subKey:'cardGentleS' },
   { id:'deep',   view:'one', cfg:EX_DEEP,   titleKey:'cardDeepT',   subKey:'cardDeepS' },
   { id:'custom', view:'custom', titleKey:'cardCustomT', subKey:'cardCustomS' },
+  { id:'analyze', view:'analyze', titleKey:'anCard', subKey:'anCardSub' },
 ];
 let easyView='ref', easyExId='ref', examplesStale=false;
 // joint-angle dragging: only in Custom (easy) or advanced mode. Length dragging is always on.
@@ -1811,7 +1924,7 @@ function refreshEasyLabel(){
 function renderCarousel(){
   const host=document.getElementById('easySel'); if(!host) return;
   host.innerHTML = EXAMPLES.map((e,i)=>{
-    const dis = examplesStale && e.id!=='custom';
+    const dis = examplesStale && e.id!=='custom' && e.id!=='analyze';
     return `<div class="mode${e.id===easyExId?' active':''}${dis?' disabled':''}" data-ex="${i}"><b>${t(e.titleKey)}</b><span>${t(e.subKey)}</span></div>`;
   }).join('');
   host.querySelectorAll('.mode').forEach(el=>el.addEventListener('click',()=>{
@@ -1826,6 +1939,7 @@ function setEasyView(view, exId, cfg){
   app.classList.toggle('view-ref', view==='ref');
   app.classList.toggle('view-one', view==='one');
   app.classList.toggle('view-custom', view==='custom');
+  app.classList.toggle('view-analyze', view==='analyze');
   renderCarousel();
   if(view==='ref'){
     state.bounceA=EX_GOOD; state.bounceB=EX_BAD;
@@ -1834,6 +1948,8 @@ function setEasyView(view, exId, cfg){
   } else if(view==='one'){
     applyConfig(cfg);
     if(!state.playing) togglePlay(true);
+  } else if(view==='analyze'){
+    if(state.playing) togglePlay(false);
   } else {
     if(state.playing) togglePlay(false);
     document.getElementById('poseLabel').textContent=t('plYour');
@@ -1906,6 +2022,175 @@ document.getElementById('simpleToggle').addEventListener('click',()=>{
   document.getElementById('simpleToggle').textContent = easy ? t('adv') : t('easyBtn');
   if(easy){ setEasyView('ref'); } else if(state.playing){ togglePlay(false); }
 });
+
+// ================= VIDEO ANALYZER (on-device pose → bounce evaluation) =================
+// The video is read locally via an object URL, tracked frame-by-frame with MediaPipe
+// Pose Landmarker, and never uploaded. Angles are mapped to the model's parameters and
+// scored with the same joint-protection model used everywhere else.
+const AN = { landmarker:null, frames:[], url:null, result:null, replaying:false, replayRAF:null };
+const AN_ESM  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+const AN_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
+const AN_MODEL= 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+const LM = { nose:0, Lsh:11, Rsh:12, Lhip:23, Rhip:24, Lknee:25, Rknee:26, Lank:27, Rank:28, Lheel:29, Rheel:30, Ltoe:31, Rtoe:32 };
+const POSE_CONN = [[11,12],[11,23],[12,24],[23,24],[23,25],[25,27],[27,29],[29,31],[27,31],[24,26],[26,28],[28,30],[30,32],[28,32],[11,13],[13,15],[12,14],[14,16]];
+const anEl = id => document.getElementById(id);
+const anStatus = m => { anEl('anStatus').textContent = m || ''; };
+const anClamp = (v,lo,hi) => Math.min(hi, Math.max(lo, v));
+
+function angleAt(a,b,c){ const abx=a.x-b.x,aby=a.y-b.y,cbx=c.x-b.x,cby=c.y-b.y;
+  const d=abx*cbx+aby*cby, m=Math.hypot(abx,aby)*Math.hypot(cbx,cby)||1e-6;
+  return Math.acos(anClamp(d/m,-1,1))*180/Math.PI; }
+function vertAngleDeg(a,b){ return Math.atan2(b.x-a.x, -(b.y-a.y))*180/Math.PI; }   // 0 = straight up, + = leaning
+function anSmooth(arr,w){ const o=[]; for(let i=0;i<arr.length;i++){ let s=0,n=0; for(let j=-w;j<=w;j++){ const k=i+j; if(k>=0&&k<arr.length){s+=arr[k];n++;} } o.push(s/n);} return o; }
+function anFindPeaks(arr,times){ const n=arr.length; if(!n) return []; const mn=Math.min(...arr), mx=Math.max(...arr), thr=mn+(mx-mn)*0.45; const peaks=[]; let last=-1e9;
+  for(let i=1;i<n-1;i++){ if(arr[i]>thr && arr[i]>=arr[i-1] && arr[i]>=arr[i+1]){
+    if(times[i]-last>0.25){ peaks.push({i,t:times[i]}); last=times[i]; }
+    else if(peaks.length && arr[i]>arr[peaks[peaks.length-1].i]){ peaks[peaks.length-1]={i,t:times[i]}; } } }
+  return peaks; }
+function anPeakSharp(arr,idxs){ if(!idxs.length) return 0.5; let s=0,n=0; for(const i of idxs){ if(i>1&&i<arr.length-2){ s+=Math.abs(arr[i-1]-2*arr[i]+arr[i+1]); n++; } } return anClamp((n?s/n:0)/6,0,1); }
+function anSymmetry(frames){ const rng=(kn,hp,an)=>{ const fl=frames.map(f=>{ const P=f.lm; if(!P[kn]||!P[hp]||!P[an]) return 0;
+      return 180-angleAt({x:P[hp].x,y:P[hp].y},{x:P[kn].x,y:P[kn].y},{x:P[an].x,y:P[an].y}); });
+    return Math.max(...fl)-Math.min(...fl); };
+  const L=rng(LM.Lknee,LM.Lhip,LM.Lank), R=rng(LM.Rknee,LM.Rhip,LM.Rank);
+  return { L, R, asym: (L+R)>0 ? anClamp(Math.abs(L-R)/((L+R)/2),0,1) : 0 }; }
+
+async function anLoadEngine(){
+  if(AN.landmarker) return AN.landmarker;
+  anStatus(t('anLoadingEngine'));
+  const vision = await import(AN_ESM);
+  const fileset = await vision.FilesetResolver.forVisionTasks(AN_WASM);
+  const opts = deleg => ({ baseOptions:{ modelAssetPath:AN_MODEL, delegate:deleg },
+    runningMode:'VIDEO', numPoses:1, minPoseDetectionConfidence:0.5, minTrackingConfidence:0.5 });
+  try { AN.landmarker = await vision.PoseLandmarker.createFromOptions(fileset, opts('GPU')); }
+  catch(_) { AN.landmarker = await vision.PoseLandmarker.createFromOptions(fileset, opts('CPU')); }
+  return AN.landmarker;
+}
+function anSeek(v,time){ return new Promise(res=>{ const h=()=>{ v.removeEventListener('seeked',h); res(); }; v.addEventListener('seeked',h); v.currentTime=Math.min(Math.max(0,time),(v.duration||0)-0.02); }); }
+
+// file pick
+anEl('anPick').addEventListener('click',()=>anEl('anFile').click());
+anEl('anFile').addEventListener('change', e=>{
+  const f=e.target.files && e.target.files[0]; if(!f) return;
+  if(AN.url) URL.revokeObjectURL(AN.url);
+  AN.url=URL.createObjectURL(f); AN.frames=[]; AN.result=null;
+  const v=anEl('anVideo'); v.src=AN.url; v.style.display='block';
+  anEl('anEmpty').style.display='none'; anEl('anCanvas').style.display='block';
+  anEl('anFileName').textContent=f.name;
+  anEl('anResults').style.display='none'; anEl('anReplay').style.display='none';
+  anStatus('');
+});
+
+anEl('anRun').addEventListener('click', anAnalyze);
+async function anAnalyze(){
+  const v=anEl('anVideo');
+  if(!AN.url || !v.duration){ anStatus(t('anNoFile')); return; }
+  const run=anEl('anRun'); run.disabled=true; anStopReplay();
+  anEl('anResults').style.display='none'; anEl('anReplay').style.display='none';
+  try { await anLoadEngine(); }
+  catch(err){ console.warn('analyzer load failed', err); anStatus(t('anErr')); run.disabled=false; return; }
+  anEl('anProgWrap').style.display='block'; anStatus(t('anProcessing'));
+  const cv=anEl('anCanvas'); cv.width=v.videoWidth||640; cv.height=v.videoHeight||360;
+  const dur=v.duration, fps=24, dt=1/fps, frames=[];
+  for(let time=0; time<dur; time+=dt){
+    await anSeek(v,time);
+    let res; try{ res=AN.landmarker.detectForVideo(v, Math.round(time*1000)); }catch(_){ continue; }
+    if(res && res.landmarks && res.landmarks[0]) frames.push({ t:time, lm:res.landmarks[0] });
+    anEl('anProg').style.width=Math.round(time/dur*100)+'%';
+  }
+  anEl('anProg').style.width='100%'; anEl('anProgWrap').style.display='none';
+  AN.frames=frames;
+  if(frames.length<6){ anStatus(t('anNoPose')); run.disabled=false; return; }
+  anStatus('');
+  AN.result=anEvaluate(frames); anRender(AN.result);
+  anEl('anReplay').style.display='inline-block'; run.disabled=false;
+}
+
+function anEvaluate(frames){
+  const vis=(f,i)=>(f.lm[i]&&f.lm[i].visibility)||0;
+  let visL=0, visR=0;
+  frames.forEach(f=>{ visL+=vis(f,LM.Lknee)+vis(f,LM.Lhip)+vis(f,LM.Lank); visR+=vis(f,LM.Rknee)+vis(f,LM.Rhip)+vis(f,LM.Rank); });
+  const idx = visR>=visL ? {sh:LM.Rsh,hip:LM.Rhip,knee:LM.Rknee,ank:LM.Rank,heel:LM.Rheel,toe:LM.Rtoe}
+                         : {sh:LM.Lsh,hip:LM.Lhip,knee:LM.Lknee,ank:LM.Lank,heel:LM.Lheel,toe:LM.Ltoe};
+  const series=frames.map(f=>{ const P=f.lm, g=i=>({x:P[i].x,y:P[i].y});
+    const sh=g(idx.sh),hip=g(idx.hip),knee=g(idx.knee),ank=g(idx.ank),toe=g(idx.toe),heel=g(idx.heel);
+    const face=Math.sign(toe.x-heel.x)||1;
+    return { t:f.t, kneeFlex:180-angleAt(hip,knee,ank), trunk:Math.abs(vertAngleDeg(hip,sh)),
+             shin:Math.abs(vertAngleDeg(ank,knee)), kneePastToe:(knee.x-toe.x)*face }; });
+  const kf=anSmooth(series.map(s=>s.kneeFlex),2), times=series.map(s=>s.t);
+  const peaks=anFindPeaks(kf,times);
+  const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+  const reps=peaks.map(pk=>({ depthDeg:series[pk.i].kneeFlex, trunk:series[pk.i].trunk, shin:series[pk.i].shin, kneePastToe:series[pk.i].kneePastToe }));
+  const bottomFlex=mean(reps.map(r=>r.depthDeg))||Math.max(...kf);
+  const trunkLeanDeg=mean(reps.map(r=>r.trunk))||mean(series.map(s=>s.trunk));
+  const shinDeg=mean(reps.map(r=>r.shin))||mean(series.map(s=>s.shin));
+  const kneePast=mean(reps.map(r=>r.kneePastToe));
+  const topFlex=Math.min(...kf);
+  let periods=[]; for(let i=1;i<peaks.length;i++) periods.push(peaks[i].t-peaks[i-1].t);
+  const period=periods.length?mean(periods):0, bpm=period>0?Math.round(60/period):0;
+  const softness=anClamp(1-anPeakSharp(kf,peaks.map(p=>p.i)),0.1,0.95);
+  const sym=anSymmetry(frames);
+  const cfg={ mass:72, height:1.75, depth:anClamp(bottomFlex/135,0.03,1), kneeForward:anClamp(shinDeg/42,0,1),
+    trunkLean:anClamp(trunkLeanDeg/72,0,1), wpos:0.58,
+    topPose:{ depth:anClamp(topFlex/135,0.02,1), kneeForward:anClamp(shinDeg*0.5/42,0,1), trunkLean:anClamp(trunkLeanDeg*0.5/72,0,1), wpos:0.55 },
+    pathCoord:0, bpm:anClamp(bpm||110,60,240), softness, weightFrac:0.55, footSpring:0.5, stepPattern:'even', seg:{trunk:1,thigh:1,shank:1,foot:1} };
+  const ev=evaluateBounce(cfg);
+  return { reps, peaks, bottomFlex, trunkLeanDeg, shinDeg, kneePast, topFlex, bpm, softness, sym, cfg, score:ev.score };
+}
+
+function anCues(r){
+  const c=[];
+  if(r.trunkLeanDeg<14) c.push(['bad',t('anCueUpright')]);
+  else if(r.trunkLeanDeg>46) c.push(['bad',t('anCueOverHinge')]);
+  else c.push(['good',t('anCueGoodHinge')]);
+  if(r.shinDeg>30 || r.kneePast>0.04) c.push(['bad',t('anCueKneesOver')]);
+  if(r.bottomFlex>60) c.push(['bad',t('anCueDeep')]); else c.push(['good',t('anCueGoodDepth')]);
+  if(r.softness<0.45) c.push(['bad',t('anCueStiff')]); else c.push(['good',t('anCueGoodSoft')]);
+  if(r.sym && r.sym.asym>0.25) c.push(['bad',t('anCueAsym')]);
+  return c;
+}
+function anRender(r){
+  anEl('anResults').style.display='block';
+  const v=anEl('anVerdict'), band = r.score>=80?['anVerdictGood','var(--good)']:r.score>=60?['anVerdictOk','var(--warn)']:['anVerdictWork','var(--bad)'];
+  v.textContent=t(band[0]); v.style.color=band[1];
+  anEl('anScore').textContent=r.score;
+  const sb=anEl('anScoreBar'); sb.style.width=r.score+'%'; sb.style.background=r.score>=75?'var(--good)':r.score>=50?'var(--warn)':'var(--bad)';
+  const symPct=r.sym?Math.round((1-r.sym.asym)*100):100;
+  anEl('anMetrics').innerHTML=[
+    [t('anReps'), r.peaks.length],
+    [t('anTempo'), (r.bpm||'—')+' BPM'],
+    [t('anDepth'), Math.round(r.bottomFlex)+'° ('+Math.round(r.cfg.depth*100)+'%)'],
+    [t('anTrunk'), Math.round(r.trunkLeanDeg)+'°'],
+    [t('anKnee'), Math.round(r.shinDeg)+'°'],
+    [t('anSym'), symPct+'%'],
+  ].map(([l,val])=>`<div class="anmetric"><div class="v">${val}</div><div class="l">${l}</div></div>`).join('');
+  anEl('anCueList').innerHTML=anCues(r).map(([cls,txt])=>`<li class="${cls}"><span>${cls==='good'?'✓':'▲'}</span><span>${txt}</span></li>`).join('');
+  anEl('anReps').innerHTML='<table><thead><tr><th>'+t('anRepN')+'</th><th class="num">'+t('anColDepth')+'</th><th class="num">'+t('anColKnee')+'</th><th class="num">'+t('anColTrunk')+'</th></tr></thead><tbody>'+
+    r.reps.map((rp,i)=>`<tr><td>${i+1}</td><td class="num">${Math.round(rp.depthDeg)}°</td><td class="num">${Math.round(rp.shin)}°</td><td class="num">${Math.round(rp.trunk)}°</td></tr>`).join('')+'</tbody></table>';
+}
+
+// skeleton replay
+anEl('anReplay').addEventListener('click', ()=>{ AN.replaying ? anStopReplay() : anStartReplay(); });
+function anStartReplay(){
+  if(!AN.frames.length) return;
+  const v=anEl('anVideo'); AN.replaying=true; anEl('anReplay').textContent=t('anReplayStop');
+  v.currentTime=0; v.play().catch(()=>{});
+  const draw=()=>{ if(!AN.replaying) return; anDrawSkeleton(v.currentTime);
+    if(v.ended){ anStopReplay(); return; } AN.replayRAF=requestAnimationFrame(draw); };
+  draw();
+}
+function anStopReplay(){ AN.replaying=false; const v=anEl('anVideo'); if(v) v.pause();
+  const b=anEl('anReplay'); if(b) b.textContent=t('anReplay'); if(AN.replayRAF) cancelAnimationFrame(AN.replayRAF); }
+function anDrawSkeleton(time){
+  const cv=anEl('anCanvas'), ctx=cv.getContext('2d'); if(!AN.frames.length) return;
+  let best=AN.frames[0], bd=1e9; for(const f of AN.frames){ const d=Math.abs(f.t-time); if(d<bd){bd=d;best=f;} }
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const lm=best.lm, X=p=>p.x*cv.width, Y=p=>p.y*cv.height;
+  ctx.strokeStyle='#58a6ff'; ctx.lineWidth=Math.max(2,cv.width/300);
+  POSE_CONN.forEach(([a,b])=>{ if(lm[a]&&lm[b]){ ctx.beginPath(); ctx.moveTo(X(lm[a]),Y(lm[a])); ctx.lineTo(X(lm[b]),Y(lm[b])); ctx.stroke(); } });
+  ctx.fillStyle='#f0f6fc';
+  lm.forEach(p=>{ if(p&&(p.visibility===undefined||p.visibility>0.4)){ ctx.beginPath(); ctx.arc(X(p),Y(p),Math.max(2.5,cv.width/220),0,7); ctx.fill(); } });
+}
+anEl('anBack').addEventListener('click', ()=>{ anStopReplay(); setEasyView('ref'); });
 
 // language toggle
 document.getElementById('langBtn').addEventListener('click', toggleLang);
